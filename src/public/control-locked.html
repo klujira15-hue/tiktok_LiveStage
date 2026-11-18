@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ห้องควบคุมไลฟ์ — เฉพาะผู้สนับสนุน</title>
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="fonts/fonts.css">
+<!-- เซิร์ฟเวอร์ส่งหน้านี้แทน control.html เมื่อบัญชียังไม่ใช่ผู้สนับสนุน (server.js controlOk) -->
+<style>
+  :root { --bg: #0b0b0c; --s1: #161413; --line: #2c2724; --text: #f4f1ec; --muted: #a8a29a; --gold: #f0b252; }
+  html, body { margin: 0; min-height: 100%; }
+  body { background: radial-gradient(120% 80% at 50% 0%, #2a1d10 0%, var(--bg) 60%); color: var(--text); font: 15px/1.55 'IBM Plex Sans Thai', 'Leelawadee UI', 'Thonburi', system-ui, sans-serif;
+    display: flex; align-items: center; justify-content: center; padding: 28px 16px; box-sizing: border-box; min-height: 100vh; }
+  .card { width: 100%; max-width: 620px; background: var(--s1); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+  .card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-bottom: 1px solid var(--line); }
+  .in { padding: 22px 26px 26px; }
+  .tag { display: inline-block; padding: 3px 12px; border-radius: 99px; background: rgba(240,178,82,.15); color: var(--gold); font-weight: 700; font-size: 13px; }
+  h1 { margin: 10px 0 6px; font-size: 26px; line-height: 1.25; }
+  p { margin: 0 0 12px; color: #d9d3cb; }
+  ul { margin: 0 0 18px; padding: 0; list-style: none; display: grid; gap: 6px; }
+  li { display: flex; gap: 10px; align-items: flex-start; color: #e9e4dc; }
+  li i { font-style: normal; flex: none; width: 24px; text-align: center; }
+  .go { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; padding: 12px 16px; border: 0; border-radius: 14px; cursor: pointer; text-decoration: none;
+    background: linear-gradient(180deg, #ffd27a, #f0b252); color: #2a1a05; font: inherit; font-weight: 800; font-size: 18px; box-shadow: 0 8px 20px rgba(240,178,82,.25); box-sizing: border-box; }
+  .go span { font-weight: 500; font-size: 13px; }
+  .how { margin: 14px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <img alt="" src="whatsnew/170-control.jpg">
+    <div class="in">
+      <span class="tag">👑 ฟังก์ชันเฉพาะผู้สนับสนุน</span>
+      <h1>🎛️ ห้องควบคุมไลฟ์</h1>
+      <p>ถ้าคุณชอบห้องควบคุมไลฟ์ สมัครผู้สนับสนุน TubHool เพื่อใช้ฟังก์ชันนี้ได้เลย — ระหว่างไลฟ์คุมทุกอย่างได้จากหน้าเดียว</p>
+      <ul>
+        <li><i>📺</i>ดูหน้าเวทีกับคอมเมนต์ในหน้าเดียว</li>
+        <li><i>✨</i>กดเอฟเฟกต์ เปลี่ยนเพลง ปรับเสียงดนตรี เปิด/ปิดเสียงพูด</li>
+        <li><i>⏸️</i>ตั้งหน้า “รอเริ่มไลฟ์” / “พักเบรก” ได้ทันที</li>
+        <li><i>🔍</i>ตั้งค่าซูมหาคนส่งของขวัญ</li>
+        <li><i>🪟</i>เด้งขึ้นเองทุกครั้งที่เริ่มไลฟ์ ปิดเองเมื่อจบไลฟ์</li>
+      </ul>
+      <a class="go" id="go" href="https://tubhool.com/donate/" target="_blank" rel="noopener"><b>👑 สมัครผู้สนับสนุน</b><span>ได้ห้องควบคุมไลฟ์ + ใช้ได้ทุกธีม</span></a>
+      <p class="how">หรือเปิดโปรแกรม Live Stage แล้วกดปุ่ม “ปลดลิมิตทุกธีม” • สมัครแล้วกดตรวจสถานะในโปรแกรม แล้วเปิดห้องควบคุมใหม่</p>
+    </div>
+  </div>
+<script>
+  // ลิงก์หน้าสมัครของบัญชีนี้ (ถ้าเปิดจากเครื่องที่รันโปรแกรม)
+  fetch('/api/account', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((a) => {
+    if (!a) return;
+    const url = a.user?.donate_url || (a.site ? a.site.replace(/\/+$/, '') + '/donate/' : '');
+    if (/^https:\/\//.test(url)) document.getElementById('go').href = url;
+  }).catch(() => {});
+</script>
+</body>
+</html>

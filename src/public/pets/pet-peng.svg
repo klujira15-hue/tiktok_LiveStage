@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="288" height="352" viewBox="-36 -44 72 88"><defs><symbol id="peng" viewBox="-36 -44 72 88">
+<ellipse cx="-27" cy="8" rx="7" ry="17" fill="#2b3a55" transform="rotate(20 -27 8)"></ellipse><ellipse cx="27" cy="8" rx="7" ry="17" fill="#2b3a55" transform="rotate(-20 27 8)"></ellipse>
+<ellipse cx="0" cy="4" rx="28" ry="36" fill="#2b3a55"></ellipse>
+<ellipse cx="0" cy="12" rx="20" ry="27" fill="#ffffff"></ellipse>
+<path d="M-17 -20 q-3 10 6 14 q5 2 11 2 q6 0 11 -2 q9 -4 6 -14 q-8 -8 -17 -2 q-9 -6 -17 2z" fill="#ffffff"></path>
+<ellipse cx="-19" cy="-6" rx="5" ry="3" fill="#ffd166" opacity="0.8"></ellipse><ellipse cx="19" cy="-6" rx="5" ry="3" fill="#ffd166" opacity="0.8"></ellipse>
+<circle cx="-8" cy="-14" r="3.4" fill="#1a1a2a"></circle><circle cx="8" cy="-14" r="3.4" fill="#1a1a2a"></circle><circle cx="-7" cy="-15.4" r="1.1" fill="#ffffff"></circle><circle cx="9" cy="-15.4" r="1.1" fill="#ffffff"></circle>
+<path d="M-4 -8 l4 5 l4 -5z" fill="#ff9f1c"></path>
+<ellipse cx="-13" cy="-6" rx="3" ry="1.8" fill="#ff8fa3" opacity="0.6"></ellipse><ellipse cx="13" cy="-6" rx="3" ry="1.8" fill="#ff8fa3" opacity="0.6"></ellipse>
+<ellipse cx="-9" cy="40" rx="8" ry="3.6" fill="#ff9f1c"></ellipse><ellipse cx="9" cy="40" rx="8" ry="3.6" fill="#ff9f1c"></ellipse>
+</symbol></defs><use href="#peng" x="-36" y="-44" width="72" height="88"></use></svg>

@@ -1,0 +1,34 @@
+เริ่มงานที่ Z:\Rujira\tiktok_LiveStage
+
+เปิดโปรแกรมสำหรับพัฒนา: ดับเบิลคลิก Start-LiveStage.cmd
+แก้ไขโค้ดหลักได้ในโฟลเดอร์ src
+
+หน้าจอหลัก: src\public\app.html และ app.js
+หน้าควบคุมละเอียด: src\public\admin.html และ admin.js
+เซิร์ฟเวอร์/การเชื่อมต่อ: src\server.js
+ตัวละคร 2D: src\public\avatar2d.js
+ตัวละคร 3D: src\public\avatar.js
+เกม: ไฟล์ *-engine.js, src\mg และ src\public\mg
+ภาพตัวละคร 5 ชุดของเรา: custom\characters\source
+
+สำเนานี้เก็บโครงสร้าง เมนู และเกมตามต้นแบบไว้ครบ
+ยังไม่ได้เปลี่ยนกราฟิกหรือกติกาเกม เพื่อให้เริ่มแก้จากระบบของเขาได้ตรง ๆ
+ภาพตัวละครของเราถูกเก็บเตรียมไว้ แต่ยังไม่ได้ผูกเข้ากับตัวแสดงผล
+
+บัญชีสมาชิกและสิทธิ์ธีมยังทำงานตามต้นแบบ ต้องใช้บัญชีเดิมที่มีสิทธิ์
+ตัวติดตั้งมี renderer ธีม concert และ custom; ธีมอื่นโหลดจากบริการผู้พัฒนา
+ข้อมูลของสำเนานี้เก็บแยกใน .local\user-data
+
+ตรวจไฟล์: npm run verify
+ผลตรวจ: docs\verification.json
+รายชื่อเมนูและไฟล์เกม: docs\MENU-AND-GAME-CHECKLIST.txt
+ตัวโปรแกรมต้นฉบับที่ไม่แก้ไข: reference-runtime
+
+ตรวจความครบถ้วนและการติดตั้ง runtime แล้ว
+ทดสอบเปิดผ่าน Start-LiveStage.cmd แล้ว หน้าต่างแอปและหน้าเข้าสู่ระบบแสดงได้
+ยังไม่ได้เข้าสู่บัญชีหรือเชื่อม TikTok จริง
+
+ตัวรัน Electron จะคัดลอกไปที่ %LOCALAPPDATA%\TikTokLiveStage\Runtime
+เพื่อแก้ปัญหาสิทธิ์ sandbox บนไดรฟ์เครือข่าย Z โดยซอร์สยังอยู่บน Z เหมือนเดิม
+ไม่มีการปิด sandbox หรือเปลี่ยนสิทธิ์โฟลเดอร์ Z
+ดู log การเปิดได้ที่ .local\logs\desktop-launch.log

@@ -1,0 +1,11 @@
+{
+  "status": "source sheets preserved; renderer integration pending",
+  "layout": {"columns":4,"rows":2,"frames":8,"width":1774,"height":887,"background":"green chroma key"},
+  "characters": [
+    {"id":"boy-red","name":"หนุ่มเสื้อแดง","source":"source/boy-red.png"},
+    {"id":"girl-newyear","name":"สาวปีใหม่","source":"source/girl-newyear.png"},
+    {"id":"boy-strawhat","name":"หนุ่มหมวกฟาง","source":"source/boy-strawhat.png"},
+    {"id":"girl-molam","name":"สาวหมอลำ","source":"source/girl-molam.png"},
+    {"id":"girl-thai","name":"สาวชุดไทย","source":"source/girl-thai.png"}
+  ]
+}

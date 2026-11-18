@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ห้องควบคุมไลฟ์ — Live Stage</title>
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  /* ห้องควบคุมไลฟ์: หน้าต่างลอย (เด้งขึ้นเองตอนเชื่อมต่อ TikTok LIVE — desktop/main.js) • ซ้าย = หน้าเวทีที่ออกไลฟ์ + คอมเมนต์วิ่งแบบ TikTok
+     ขวา = ปุ่มควบคุมระหว่างไลฟ์ (ใช้ระบบเดียวกับหลังบ้าน ค่าตรงกันเสมอ) */
+  :root { --bg: #0b0b0c; --s1: #161413; --s2: #1d1a19; --s3: #26221f; --line: #2c2724; --text: #f4f1ec; --muted: #a8a29a; --red: #e8453c; --gold: #f0b252; --green: #4fc483; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); color: var(--text); font: 13px/1.4 'IBM Plex Sans Thai', 'Leelawadee UI', 'Thonburi', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden; }
+  button { font: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible { outline: 2px solid #ffd166; outline-offset: 1px; }
+  /* แถบบน */
+  .tb { height: 44px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 10px 0 12px; background: var(--s1); border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .live { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 99px; background: #3a3532; color: #ddd; font-weight: 700; font-size: 12px; }
+  .live i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .live.on { background: var(--red); color: #fff; }
+  .live.on i { background: #fff; animation: blink 1.2s infinite; }
+  .live.wait { background: #4a3a14; color: #ffd27a; }
+  @keyframes blink { 50% { opacity: .3; } }
+  .who { font-weight: 600; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+  .stat { color: var(--muted); display: flex; gap: 14px; }
+  .stat b { color: var(--text); font-weight: 600; }
+  .sp { flex: 1; }
+  .tbtn { height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--s2); cursor: pointer; }
+  .tbtn.on { background: #2a1c1a; border-color: #4a2a26; color: #ff9a90; }
+  .main { flex: 1; min-height: 0; display: flex; }
+  /* ซ้าย: หน้าเวที */
+  .stage { flex: none; height: 100%; aspect-ratio: 9 / 16; max-width: 46vw; background: #000; position: relative; border-right: 1px solid var(--line); overflow: hidden; }
+  .stage iframe { width: 100%; height: 100%; border: 0; display: block; pointer-events: none; }
+  .stage .shade { position: absolute; inset: auto 0 0 0; height: 48%; background: linear-gradient(transparent, rgba(0,0,0,.55)); pointer-events: none; }
+  .tag { position: absolute; top: 8px; left: 8px; padding: 2px 9px; border-radius: 99px; background: rgba(11,11,12,.82); font-size: 11px; color: var(--green); font-weight: 600; }
+  .mtag { position: absolute; top: 8px; right: 8px; padding: 2px 9px; border-radius: 99px; background: rgba(11,11,12,.82); font-size: 11px; }
+  .chat { position: absolute; left: 8px; right: 54px; bottom: 10px; height: 52%; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px;
+    -webkit-mask-image: linear-gradient(transparent, #000 20%); mask-image: linear-gradient(transparent, #000 20%); pointer-events: none; }
+  .chat.off { display: none; }
+  .msg { display: flex; gap: 6px; align-items: flex-start; font-size: 12.5px; line-height: 1.35; text-shadow: 0 1px 2px rgba(0,0,0,.85); animation: up .26s ease-out; }
+  @keyframes up { from { transform: translateY(14px); opacity: 0; } }
+  .av { width: 22px; height: 22px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; overflow: hidden; }
+  .av img { width: 100%; height: 100%; object-fit: cover; }
+  .tx { background: rgba(0,0,0,.3); padding: 2px 8px 3px; border-radius: 10px; min-width: 0; overflow-wrap: anywhere; }
+  .nm { color: #c9c4bd; font-weight: 600; margin-right: 4px; }
+  .msg.gift .tx { background: rgba(240,178,82,.24); }
+  .msg.gift img.gi { width: 18px; height: 18px; vertical-align: -4px; margin: 0 2px; object-fit: contain; }
+  .msg.join .tx { background: none; color: #d6d0c8; font-size: 12px; }
+  .msg.follow .tx { background: rgba(232,69,60,.28); }
+  .empty { position: absolute; left: 0; right: 0; bottom: 40%; text-align: center; color: #cfc9c2; font-size: 12px; text-shadow: 0 1px 3px #000; }
+  /* ขวา: แผงควบคุม */
+  .ctl { flex: 1; min-width: 0; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-content: start; }
+  .card { background: var(--s1); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; min-width: 0; }
+  .card.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .card h3 { margin: 0 0 7px; font-size: 13px; font-weight: 600; color: var(--gold); display: flex; align-items: center; gap: 6px; }
+  .card h3 small { margin-left: auto; color: var(--muted); font-weight: 400; font-size: 11px; }
+  .wide { grid-column: 1 / -1; }
+  .seg { display: flex; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
+  .seg button { flex: 1; height: 32px; border: 0; border-radius: 8px; background: none; color: var(--muted); font-weight: 500; cursor: pointer; white-space: nowrap; padding: 0 4px; }
+  .seg button.on { background: var(--s3); color: var(--text); box-shadow: inset 0 0 0 1px #4a423c; }
+  .seg button.on.warn { background: #3a1916; color: #ffb3ac; box-shadow: inset 0 0 0 1px #6a2a24; }
+  .modeOpt { margin-top: 6px; display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+  .modeOpt input { width: 54px; height: 28px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; text-align: center; }
+  .sw { display: flex; align-items: center; gap: 10px; padding: 4px 0; border-top: 1px solid #221e1c; cursor: pointer; user-select: none; }
+  .sw:first-of-type { border-top: 0; padding-top: 2px; }
+  .sw .ic { width: 24px; text-align: center; font-size: 16px; }
+  .sw .lb { flex: 1; }
+  .sw .lb small { display: block; color: var(--muted); font-size: 11px; }
+  .tg { width: 38px; height: 22px; border-radius: 99px; background: #3a3532; position: relative; transition: .2s; flex: none; }
+  .tg::after { content: ''; position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: #cfc9c2; transition: .2s; }
+  .sw.on .tg { background: var(--green); }
+  .sw.on .tg::after { left: 19px; background: #fff; }
+  .sl { margin-top: 5px; }
+  .sl .row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .sl .row b { color: var(--text); font-weight: 600; }
+  .sl input { width: 100%; accent-color: var(--gold); margin: 3px 0 0; }
+  .np { display: flex; gap: 10px; align-items: center; }
+  .np .art { width: 38px; height: 38px; border-radius: 9px; background: linear-gradient(135deg, #e8453c, #f0b252); display: grid; place-items: center; font-size: 18px; flex: none; }
+  .np .meta { flex: 1; min-width: 0; }
+  .np .meta b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .np .meta span { color: var(--muted); font-size: 11.5px; }
+  .prog { height: 4px; border-radius: 99px; background: #2c2724; margin-top: 5px; overflow: hidden; }
+  .prog i { display: block; height: 100%; width: 0; background: var(--gold); }
+  .pctl { display: flex; gap: 6px; margin-top: 7px; }
+  .pctl button { flex: 1; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--s2); font-size: 15px; cursor: pointer; display: grid; place-items: center; padding: 0; line-height: 1; }
+  .pctl button.play { background: var(--gold); color: #2b1d06; border: 0; font-weight: 700; }
+  .addb { margin-left: auto; height: 26px; padding: 0 10px; border-radius: 7px; border: 0; background: var(--gold); color: #2b1d06; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .list { margin-top: 6px; max-height: 150px; overflow-y: auto; /* เห็นได้ราว 5 เพลง */ border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
+  .list .it { display: flex; gap: 8px; padding: 5px 9px; border-top: 1px solid #1d1a18; cursor: pointer; font-size: 12px; align-items: center; }
+  .list .it:first-child { border-top: 0; }
+  .list .it.on { color: var(--gold); background: #1d1814; }
+  .list .it .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .list .it .d { color: var(--muted); }
+  .list .x { border: 0; background: none; color: var(--muted); width: 20px; border-radius: 5px; cursor: pointer; opacity: 0; }
+  .list .it:hover .x { opacity: 1; }
+  .list .x:hover { color: #ff8a80; background: #2a1c1a; }
+  .list .none { padding: 8px; color: var(--muted); font-size: 12px; text-align: center; }
+  /* ลากไฟล์เพลงมาวางที่ไหนก็ได้ในการ์ดเพลง */
+  .card.over { border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+  .card.over .list { border-style: dashed; border-color: var(--gold); }
+  .sl2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ack[hidden] { display: none; } /* ยืนยันแล้ว (จากหน้านี้หรือหน้า เพลงในไลฟ์) → ไม่ต้องติ๊กอีก */
+  .ack { margin-top: 5px; font-size: 11.5px; color: #ffd27a; display: flex; gap: 6px; align-items: flex-start; }
+  /* 5 ช่อง/แถว (ไอคอนอยู่บนชื่อ) → ปุ่ม 9 อันจบใน 2 แถว ไม่ต้องเลื่อนจอ */
+  /* ซูมหาคนส่งของขวัญ */
+  .zrow { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-top: 1px solid #221e1c; }
+  .zrow > span { flex: none; width: 104px; color: var(--muted); font-size: 12px; }
+  .zrow .seg { flex: 1; }
+  .zrow .seg button { height: 28px; font-size: 12px; }
+  #zoomCard .sw[hidden] { display: none; }
+  #zoomCard.off .zrow, #zoomCard.off .sw:not([data-k="enabled"]) { opacity: .4; pointer-events: none; }
+  .fxg { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 6px; }
+  .fx { height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--s2); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 0 6px; min-width: 0; }
+  .fx b { font-size: 17px; line-height: 1; flex: none; }
+  .fx span { max-width: 100%; font-size: 12px; color: #d6d0c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fx.big { border-color: #5a4524; background: linear-gradient(180deg, #2a2116, #1d1a19); }
+  .fx.hit { animation: hit .5s ease-out; }
+  /* ธีมเกม: แบ่งกล่องเป็น 2 ส่วน — เอฟเฟกต์ของขวัญ / ควบคุมเกม (ปุ่มเดียวกับกล่อง "เกม" ในหลังบ้าน) */
+  .fxsec { display: flex; align-items: baseline; gap: 8px; margin: 0 0 6px; font-size: 12.5px; font-weight: 700; color: #e9e3da; }
+  .fxsec small { font-weight: 500; font-size: 11px; color: var(--muted); }
+  .fxsec[hidden], #gmBox[hidden] { display: none; }
+  #gmBox { margin-top: 10px; padding-top: 9px; border-top: 1px dashed #3a3352; }
+  #gmBox .fxsec { color: #c4b5ff; }
+  .gm { height: 48px; border-radius: 10px; border: 1px solid #3d3566; background: linear-gradient(180deg, #241f3b, #1b1829); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 0 6px; min-width: 0; }
+  .gm b { font-size: 17px; line-height: 1; flex: none; }
+  .gm span { max-width: 100%; font-size: 12px; color: #e3dcff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gm.warn { border-color: #6b3a3a; background: linear-gradient(180deg, #2e1d22, #1f181b); }
+  .gm.warn span { color: #ffc9c9; }
+  .gm:hover, .fx:hover { filter: brightness(1.15); }
+  .gm.hit { animation: gmhit .5s ease-out; }
+  @keyframes gmhit { 0% { background: #4a3d8a; transform: scale(.95); } }
+  @keyframes hit { 0% { background: #5a4524; transform: scale(.95); } }
+  .where { margin: -2px 0 6px; padding: 5px 8px; border-radius: 8px; font-size: 11.5px; line-height: 1.35; background: #1f1c12; color: #ffd27a; }
+  .where.ok { background: #13221a; color: #8fe0b0; }
+  /* แจ้งเตือน: หน้านี้ไม่มีเสียง + คนดูเห็นช้ากว่า */
+  .tag small { color: #cfc9c2; font-weight: 500; }
+  .lag { position: absolute; top: 34px; left: 8px; padding: 2px 9px; border-radius: 99px; background: rgba(11,11,12,.82); font-size: 11px; color: #ffd27a; }
+  .info { width: 30px; padding: 0; }
+  .note { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(0,0,0,.6); }
+  .note[hidden] { display: none; }
+  .note .box { width: min(460px, 92vw); background: var(--s1); border: 1px solid #4a423c; border-radius: 14px; padding: 16px 18px 14px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+  .note h2 { margin: 0 0 10px; font-size: 16px; color: var(--gold); }
+  .note .pt { display: flex; gap: 10px; margin: 8px 0; line-height: 1.5; }
+  .note .pt b { font-size: 20px; flex: none; line-height: 1.2; }
+  .note .pt span { color: #ddd6ce; }
+  .note .pt strong { color: var(--text); }
+  .note .row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; gap: 10px; }
+  .note label { color: var(--muted); font-size: 12px; display: flex; gap: 6px; align-items: center; }
+  .note button { height: 32px; padding: 0 16px; border-radius: 8px; border: 0; background: var(--gold); color: #2b1d06; font-weight: 700; cursor: pointer; }
+  .toast { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); background: var(--s3); border: 1px solid #4a423c; padding: 7px 14px; border-radius: 10px; opacity: 0; transition: .2s; pointer-events: none; z-index: 9; white-space: nowrap; }
+  .toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="tb">
+  <span class="live" id="live"><i></i><span id="liveT">ยังไม่ได้เชื่อมต่อ</span></span>
+  <span class="who" id="who"></span>
+  <span class="stat"><span title="เวลาที่ไลฟ์ไปแล้ว">⏱ <b id="clock">00:00:00</b></span><span title="คนดูตอนนี้">👁 <b id="viewers">0</b></span><span title="หัวใจทั้งไลฟ์">❤ <b id="likes">0</b></span><span title="เหรียญที่ได้ในไลฟ์นี้">🪙 <b id="coins">0</b></span></span>
+  <span class="sp"></span>
+  <button class="tbtn info" id="infoBtn" type="button" title="หน้านี้ไม่มีเสียง • คนดูเห็นช้ากว่า (อ่านอีกครั้ง)">ℹ️</button>
+  <button class="tbtn" id="hideChat" type="button">💬 ซ่อนคอมเมนต์</button>
+  <button class="tbtn" id="pin" type="button" hidden>📌 อยู่บนสุด</button>
+</div>
+<div class="main">
+  <div class="stage">
+    <iframe id="frame" src="stage.html?silent&desktop" title="หน้าเวทีที่ออกไลฟ์ (ปิดเสียง)" tabindex="-1"></iframe>
+    <div class="shade"></div>
+    <span class="tag" title="หน้าเวทีในหน้านี้ปิดเสียงไว้ เสียงจริงออกจากหน้าเวทีใน LIVE Studio">● หน้าเวทีที่ออกไลฟ์ <small>· 🔇 ไม่มีเสียง</small></span>
+    <span class="lag" title="ภาพที่คนดูเห็นในแอป TikTok ช้ากว่าหน้านี้ เพราะดีเลย์ของการถ่ายทอดสด">⏱ คนดูเห็นช้ากว่านี้ ~3–5 วิ</span>
+    <span class="mtag" id="mtag">🎬 ไลฟ์ปกติ</span>
+    <div class="chat" id="chat"></div>
+    <div class="empty" id="empty">คอมเมนต์จากไลฟ์จะขึ้นตรงนี้</div>
+  </div>
+  <div class="ctl">
+    <div class="card wide two">
+      <div>
+        <h3>🎬 หน้าจอตอนนี้ <small>คนดูเห็นทันที</small></h3>
+        <div class="seg" id="mode">
+          <button type="button" data-m="live" class="on">🎬 ไลฟ์ปกติ</button>
+          <button type="button" data-m="soon">⏳ รอเริ่ม</button>
+          <button type="button" data-m="brb">☕ พักเบรก</button>
+        </div>
+        <div class="modeOpt" id="modeOpt" hidden>นับถอยหลัง <input id="modeMin" type="number" min="0" max="120" value="5"> นาที (0 = ไม่นับ)</div>
+      </div>
+      <div>
+        <h3>🖼️ รูปโปรไฟล์คนดู</h3>
+        <div class="seg" id="pf">
+          <button type="button" data-p="off">ไม่แสดง</button>
+          <button type="button" data-p="small">เล็ก</button>
+          <button type="button" data-p="big">ใหญ่</button>
+          <button type="button" data-p="bigname">ใหญ่+ชื่อ</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="ttsCard">
+      <h3>🗣️ เสียงพูดอัตโนมัติ</h3>
+      <div class="where" id="ttsWhere">กำลังเช็กหน้าเวที…</div>
+      <div class="sw" data-k="gifts"><span class="ic">🎁</span><span class="lb">ขอบคุณคนส่งของขวัญ</span><span class="tg"></span></div>
+      <div class="sw" data-k="follows"><span class="ic">➕</span><span class="lb">ขอบคุณผู้ติดตามใหม่</span><span class="tg"></span></div>
+      <div class="sw" data-k="comments"><span class="ic">💬</span><span class="lb">อ่านคอมเมนต์<small>คนเยอะจะพูดถี่</small></span><span class="tg"></span></div>
+      <div class="sw" data-k="joins"><span class="ic">👋</span><span class="lb">ทักคนเข้ามาใหม่</span><span class="tg"></span></div>
+      <div class="sw" data-k="welcome"><span class="ic">🔁</span><span class="lb">ทักคนที่กลับมาดู</span><span class="tg"></span></div>
+      <div class="sl"><div class="row"><span>ความดังเสียงพูด</span><b id="vTtsV">0%</b></div><input type="range" id="vTts" min="0" max="100"></div>
+    </div>
+
+    <div class="card" id="musicCard" title="ลากไฟล์เพลงมาวางในกล่องนี้เพื่อเพิ่มได้">
+      <h3>🎵 เพลงในไลฟ์ <button class="addb" id="addSong" type="button">＋ เพิ่มเพลง</button><input type="file" id="songFile" accept=".mp3,.mp4,.m4a,.wav,.ogg,audio/*" multiple hidden></h3>
+      <div class="np"><div class="art">🎵</div><div class="meta"><b id="song">ยังไม่ได้เล่นเพลง</b><span id="songT">-</span><div class="prog"><i id="songP"></i></div></div></div>
+      <div class="pctl"><button type="button" id="mPrev" title="เพลงก่อนหน้า">⏮</button><button type="button" class="play" id="mPlay" title="เล่น / หยุด">▶</button><button type="button" id="mNext" title="เพลงถัดไป">⏭</button></div>
+      <div class="list" id="plist"></div>
+      <label class="ack" id="ackRow" hidden><input type="checkbox" id="ack"> ยืนยันว่าใช้เฉพาะเพลงที่มีสิทธิ์เปิดในไลฟ์ (ติ๊กครั้งเดียว ถึงจะเพิ่มเพลงได้)</label>
+      <div class="sl2">
+        <div class="sl"><div class="row"><span>🎵 ความดังเพลง</span><b id="vSongV">0%</b></div><input type="range" id="vSong" min="0" max="100"></div>
+        <div class="sl" title="ดนตรีประจำฉากที่เล่นตอนไม่มีเพลง"><div class="row"><span>🎼 ดนตรีฉาก</span><b id="vBgV">0%</b></div><input type="range" id="vBg" min="0" max="100"></div>
+      </div>
+    </div>
+
+    <div class="card" id="zoomCard">
+      <h3>🔍 ซูมหาคนส่งของขวัญ <button class="addb" id="zoomTest" type="button" title="สุ่มคนดูในฉากหนึ่งคนแล้วซูมให้ดู (ไม่มีของขวัญจริง)">▶ ลองซูม</button></h3>
+      <div class="where" id="zoomWhere"></div>
+      <div class="sw" data-k="enabled"><span class="ic">🎁</span><span class="lb">ซูมเข้าหาคนส่งของขวัญ<small>กล้องเลื่อนเข้าใกล้คนส่ง แล้วกลับเอง</small></span><span class="tg"></span></div>
+      <div class="zrow"><span>ซูมเมื่อส่งตั้งแต่</span><div class="seg" id="zMin"><button type="button" data-v="0">ทุกชิ้น</button><button type="button" data-v="5">🪙5+</button><button type="button" data-v="30">🪙30+</button><button type="button" data-v="100">🪙100+</button></div></div>
+      <div class="zrow"><span>ระยะซูม</span><div class="seg" id="zK"><button type="button" data-v="1.5">ห่าง</button><button type="button" data-v="2">กลาง</button><button type="button" data-v="2.5">ใกล้</button></div></div>
+      <div class="zrow"><span>ซูมนานแค่ไหน</span><div class="seg" id="zSec"><button type="button" data-v="3">3 วิ</button><button type="button" data-v="5">5 วิ</button><button type="button" data-v="7">7 วิ</button></div></div>
+      <div class="sw" data-k="hideHud"><span class="ic">🪟</span><span class="lb">ซ่อนป้ายข้างจอระหว่างซูม</span><span class="tg"></span></div>
+      <div class="sw" data-k="kidQueue" id="zKid"><span class="ic">🙏</span><span class="lb">ธีมศาล: คนดูเดินเข้าไหว้ทีละคน<small>ปิด = เข้ามาพร้อมกันทันที</small></span><span class="tg"></span></div>
+    </div>
+
+    <div class="card" id="fxCard">
+      <h3>✨ เอฟเฟกต์ฉากนี้ <span id="fxTheme" style="color:var(--text);font-weight:500"></span> <small>กดแล้วเล่นบนหน้าเวทีทันที</small></h3>
+      <div class="fxsec" id="fxLbl" hidden title="กดแล้วเหมือนผู้จัดไลฟ์ส่งของขวัญชิ้นนั้นเอง">🎁 ของขวัญ</div>
+      <div class="fxg" id="fx"></div>
+      <div id="gmBox" hidden>
+        <div class="fxsec" title="เรียกเหตุการณ์ในเกมได้ทันที • ปุ่มขอบแดง = ย้อนกลับไม่ได้ จะถามก่อน">🎮 ควบคุมเกม <small>ขอบแดง = ถามก่อน</small></div>
+        <div class="fxg" id="gm"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div class="note" id="note" hidden role="dialog" aria-labelledby="noteT">
+  <div class="box">
+    <h2 id="noteT">ℹ️ ก่อนใช้ห้องควบคุมไลฟ์</h2>
+    <div class="pt"><b>🔇</b><span><strong>หน้านี้ไม่มีเสียง</strong> — เสียงพูด เพลง และเสียงเอฟเฟกต์ ออกจากหน้าเวทีใน LIVE Studio เท่านั้น (คนดูได้ยินจากตรงนั้น) ถ้าจะฟังเสียงให้ฟังจาก LIVE Studio</span></div>
+    <div class="pt"><b>⏱</b><span><strong>คนดูเห็นช้ากว่าหน้านี้ประมาณ 3–5 วินาที</strong> (ดีเลย์ของ TikTok LIVE ถ้าเน็ตช้าอาจนานกว่านั้น) — กดเอฟเฟกต์หรือเปลี่ยนเพลงแล้วรอสักครู่ ไม่ต้องกดซ้ำ</span></div>
+    <div class="pt"><b>💬</b><span>คอมเมนต์ในหน้านี้ใช้ดูอย่างเดียว ตอบคนดูให้พิมพ์ในแอป TikTok / LIVE Studio</span></div>
+    <div class="row"><label><input type="checkbox" id="noteHide"> ไม่ต้องแสดงอีก</label><button type="button" id="noteOk">เข้าใจแล้ว</button></div>
+  </div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="game-events.js"></script>
+<script src="control.js"></script>
+</body>
+</html>

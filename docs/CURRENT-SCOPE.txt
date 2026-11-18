@@ -1,0 +1,7 @@
+Current scope correction — 17 November 2026
+The earlier festival mock website and its combined temple-fair map are excluded from this LiveStage project.
+Files created for that mistaken direction were never registered by stage.html or any theme and have been withdrawn to docs/withdrawn-mock-flow.
+All ten production files checked against docs/pre-flow-upgrade-2026-11-17T09-14-41-194Z were unchanged at withdrawal.
+Continue repairs against the current LiveStage menus, existing scene families, original game mechanics and current Local services only.
+Audit F01 (unified festival map) is withdrawn: it was inherited from the cancelled mock project and is not a defect of current scope.
+New character artwork is a separate integration task; do not infer it requires replacing the current scene or game structure.

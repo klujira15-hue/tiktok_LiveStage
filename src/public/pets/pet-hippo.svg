@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="368" height="320" viewBox="-46 -40 92 80"><defs><symbol id="hippo" viewBox="-46 -40 92 80">
+<ellipse cx="0" cy="16" rx="37" ry="24" fill="#7f7b96"></ellipse>
+<rect x="-26" y="28" width="12" height="10" rx="5" fill="#6d6984"></rect><rect x="14" y="28" width="12" height="10" rx="5" fill="#6d6984"></rect>
+<ellipse cx="-17" cy="-28" rx="5" ry="4" fill="#6d6984"></ellipse><ellipse cx="17" cy="-28" rx="5" ry="4" fill="#6d6984"></ellipse><ellipse cx="-17" cy="-28" rx="2.4" ry="2" fill="#ffb3c1"></ellipse><ellipse cx="17" cy="-28" rx="2.4" ry="2" fill="#ffb3c1"></ellipse>
+<ellipse cx="0" cy="-14" rx="24" ry="17" fill="#8a87a0"></ellipse>
+<ellipse cx="0" cy="2" rx="27" ry="16" fill="#9894ad"></ellipse>
+<ellipse cx="-8" cy="-6" rx="3" ry="2" fill="#4a4660"></ellipse><ellipse cx="8" cy="-6" rx="3" ry="2" fill="#4a4660"></ellipse>
+<path d="M-14 6 q14 10 28 0" stroke="#4a4660" stroke-width="1.6" fill="none"></path><rect x="-8" y="7" width="4" height="4" rx="1" fill="#ffffff"></rect><rect x="4" y="7" width="4" height="4" rx="1" fill="#ffffff"></rect>
+<circle cx="-10" cy="-20" r="3.2" fill="#1a1828"></circle><circle cx="10" cy="-20" r="3.2" fill="#1a1828"></circle><circle cx="-9" cy="-21.2" r="1.1" fill="#ffffff"></circle><circle cx="11" cy="-21.2" r="1.1" fill="#ffffff"></circle>
+<ellipse cx="-21" cy="2" rx="6" ry="4" fill="#ff8fa3" opacity="0.6"></ellipse><ellipse cx="21" cy="2" rx="6" ry="4" fill="#ff8fa3" opacity="0.6"></ellipse>
+<ellipse cx="-6" cy="-26" rx="6" ry="2" fill="#ffffff" opacity="0.35"></ellipse>
+</symbol></defs><use href="#hippo" x="-46" y="-40" width="92" height="80"></use></svg>

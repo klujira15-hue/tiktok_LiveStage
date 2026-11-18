@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live Stage Widget</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  /* วิดเจ็ตพื้นโปร่งใส สำหรับไลฟ์เกม/แนวนอน — วางเป็นแหล่ง Link ทับภาพเกมใน LIVE Studio หรือ Browser source ใน OBS
+   * ?w=alerts | feed | top | goal   &scale=1.2   &tts=1 (alerts พูดขอบคุณ)   &min=1 (เพชรขั้นต่ำที่ขึ้น alert)   &bg=1 (พื้นเข้มไว้ดูตอนตั้งค่า) */
+  :root { --accent: #e8453c; --gold: #ffd166; --ink: #141312; --s: 1; }
+  html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
+  body { font-family: 'IBM Plex Sans Thai', 'Leelawadee UI', sans-serif; color: #fff; font-size: calc(22px * var(--s)); }
+  body.bg { background: #2b2f3a; }
+  .hint { position: fixed; inset: 0; display: grid; place-items: center; text-align: center; font-size: 16px; color: #ccc; padding: 20px; }
+  .shadow { text-shadow: 0 2px 4px rgba(0,0,0,.85), 0 0 2px #000; }
+
+  /* alerts */
+  #alerts { position: fixed; left: 0; right: 0; bottom: 6%; display: grid; place-items: center; }
+  .alert { display: flex; align-items: center; gap: calc(16px * var(--s)); padding: calc(14px * var(--s)) calc(26px * var(--s)) calc(14px * var(--s)) calc(14px * var(--s));
+    border-radius: 999px; background: rgba(20,19,18,.86); border: calc(3px * var(--s)) solid var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    animation: aIn .45s cubic-bezier(.2,1.4,.4,1) both; max-width: 92vw; }
+  .alert.out { animation: aOut .4s ease-in both; }
+  .alert .ic { width: calc(68px * var(--s)); height: calc(68px * var(--s)); flex: none; border-radius: 50%; background: var(--accent); display: grid; place-items: center; font-size: calc(36px * var(--s)); overflow: hidden; }
+  .alert .ic img { width: 100%; height: 100%; object-fit: cover; }
+  .alert b { display: block; font-size: calc(30px * var(--s)); color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .alert span { display: block; font-size: calc(22px * var(--s)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .alert.follow { border-color: #7ad3ff; } .alert.follow .ic { background: #2c7be5; }
+  .alert.share { border-color: #9ff3c4; } .alert.share .ic { background: #1f9d6b; }
+  .alert.big { border-color: #ff7aa2; transform-origin: center; }
+  @keyframes aIn { from { transform: translateY(40px) scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes aOut { to { transform: translateY(20px) scale(.9); opacity: 0; } }
+
+  /* feed */
+  #feed { position: fixed; left: 8px; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: calc(6px * var(--s)); }
+  .msg { align-self: flex-start; max-width: 100%; padding: calc(6px * var(--s)) calc(14px * var(--s)); border-radius: calc(16px * var(--s)); background: rgba(20,19,18,.72); line-height: 1.35; animation: mIn .3s ease-out both; }
+  .msg b { color: var(--gold); margin-right: .4em; }
+  .msg.sys { background: rgba(232,69,60,.82); }
+  @keyframes mIn { from { transform: translateX(-20px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+  /* top */
+  #top { position: fixed; left: 8px; top: 8px; min-width: calc(300px * var(--s)); padding: calc(12px * var(--s)) calc(16px * var(--s)); border-radius: calc(18px * var(--s)); background: rgba(20,19,18,.78); }
+  #top h3 { margin: 0 0 calc(6px * var(--s)); font-size: calc(20px * var(--s)); color: var(--gold); }
+  #top .r { display: flex; align-items: center; gap: calc(10px * var(--s)); line-height: 1.6; }
+  #top .r i { font-style: normal; width: calc(28px * var(--s)); height: calc(28px * var(--s)); border-radius: 50%; display: grid; place-items: center; background: #3a3633; font-size: calc(16px * var(--s)); font-weight: 700; }
+  #top .r:nth-child(2) i { background: #ffb800; color: var(--ink); } #top .r:nth-child(3) i { background: #c9d3de; color: var(--ink); } #top .r:nth-child(4) i { background: #d58a4c; color: var(--ink); }
+  #top .r span { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #top .r em { font-style: normal; color: #ffd9a0; }
+
+  /* goal */
+  #goal { position: fixed; left: 8px; right: 8px; top: 8px; }
+  #goal .lbl { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; margin-bottom: calc(6px * var(--s)); }
+  #goal .bar { height: calc(28px * var(--s)); border-radius: 999px; background: rgba(20,19,18,.78); border: calc(2px * var(--s)) solid rgba(255,255,255,.4); overflow: hidden; }
+  #goal .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width .6s; }
+  #goal.done .bar i { background: #39c27a; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(() => {
+  'use strict';
+  const q = new URLSearchParams(location.search);
+  const W = q.get('w') || '';
+  const root = document.getElementById('root');
+  document.documentElement.style.setProperty('--s', Math.min(4, Math.max(0.4, Number(q.get('scale')) || 1)));
+  if (q.has('bg')) document.body.classList.add('bg');
+  const esc = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  const nf = (n) => Number(n || 0).toLocaleString('en-US');
+  if (!['alerts', 'feed', 'top', 'goal'].includes(W)) {
+    root.innerHTML = '<div class="hint">ใส่ ?w=alerts, feed, top หรือ goal ต่อท้ายลิงก์ — คัดลอกลิงก์ได้จากหน้า “วิดเจ็ต” ในโปรแกรม</div>';
+    return;
+  }
+  // วิดเจ็ตไม่นับเป็น "หน้าเวที" (ไม่ส่ง stage:stat) จึงไม่ทำให้ตัวเช็คก่อนไลฟ์เตือนว่าเปิดซ้อน
+  const socket = io({ query: { widget: W } });
+  let config = null;
+  socket.on('snapshot', (s) => {
+    config = s.config;
+    if (W === 'top') renderTop(s.top || []);
+  });
+  socket.on('config', (c) => (config = c));
+  // หลังบ้าน TubHool ปิดเมนูวิดเจ็ต → ไม่แสดงอะไร
+  const off = (c) => c?.features?.widgets === false && (root.innerHTML = '');
+  socket.on('snapshot', (s) => off(s.config));
+  socket.on('config', off);
+
+  // ---------------------------------------------------------------- alerts
+  if (W === 'alerts') {
+    root.innerHTML = '<div id="alerts"></div>';
+    const box = document.getElementById('alerts');
+    const queue = [];
+    let busy = false;
+    const min = Math.max(1, Number(q.get('min')) || 1);
+    const tts = q.get('tts') === '1';
+    let actx = null;
+    const mute = q.has('mute');
+    function chime(big) {
+      if (mute) return;
+      try {
+        actx ||= new (window.AudioContext || window.webkitAudioContext)();
+        const t = actx.currentTime;
+        (big ? [660, 880, 1320] : [880, 1320]).forEach((f, i) => {
+          const o = actx.createOscillator();
+          const g = actx.createGain();
+          o.frequency.value = f;
+          g.gain.setValueAtTime(0.0001, t + i * 0.09);
+          g.gain.exponentialRampToValueAtTime(0.18, t + i * 0.09 + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.09 + 0.5);
+          o.connect(g).connect(actx.destination);
+          o.start(t + i * 0.09);
+          o.stop(t + i * 0.09 + 0.55);
+        });
+      } catch {}
+    }
+    function say(text) {
+      if (!tts || mute) return Promise.resolve();
+      const t = config?.tts || {};
+      return new Promise((resolve) => {
+        const a = new Audio('/api/tts?' + new URLSearchParams({ text, voice: t.voice || '', rate: t.rate ?? 1, pitch: t.pitch ?? 0 }));
+        a.volume = t.volume ?? 0.9;
+        a.onended = a.onerror = resolve;
+        a.play().catch(resolve);
+        setTimeout(resolve, 8000);
+      });
+    }
+    function next() {
+      if (busy || !queue.length) return;
+      busy = true;
+      const a = queue.shift();
+      const el = document.createElement('div');
+      el.className = 'alert ' + a.cls;
+      el.innerHTML = `<div class="ic">${a.img ? `<img src="${esc(a.img)}" alt="" referrerpolicy="no-referrer">` : esc(a.icon)}</div><div><b>${esc(a.name)}</b><span>${esc(a.text)}</span></div>`;
+      box.appendChild(el);
+      chime(a.cls === 'big');
+      Promise.all([new Promise((r) => setTimeout(r, a.cls === 'big' ? 5200 : 3600)), say(a.say)]).then(() => {
+        el.classList.add('out');
+        setTimeout(() => {
+          el.remove();
+          busy = false;
+          next();
+        }, 420);
+      });
+    }
+    const push = (a) => {
+      if (queue.length > 12) queue.shift();
+      queue.push(a);
+      next();
+    };
+    socket.on('gift', (d) => {
+      if (d.gift.total < min) return;
+      const big = d.gift.total >= 500;
+      const k = (config?.tts?.voice || '').includes('Niwat') ? 'ครับ' : 'ค่ะ';
+      push({ cls: big ? 'big' : 'gift', icon: '🎁', img: d.gift.image, name: d.user.name, text: `ส่ง ${d.gift.name} x${d.gift.count} • ${nf(d.gift.total)} 💎`, say: `ขอบคุณ ${d.user.name} สำหรับ ${d.gift.name} ${k}` });
+    });
+    socket.on('social', (d) => {
+      if (d.kind === 'follow') push({ cls: 'follow', icon: '➕', name: d.name, text: 'กดติดตามแล้ว ขอบคุณมาก!', say: `ขอบคุณ ${d.name} ที่กดติดตาม` });
+      else if (d.kind === 'share') push({ cls: 'share', icon: '↗', name: d.name, text: 'แชร์ไลฟ์ ขอบคุณมาก!', say: '' });
+    });
+  }
+
+  // ---------------------------------------------------------------- feed
+  if (W === 'feed') {
+    root.innerHTML = '<div id="feed"></div>';
+    const box = document.getElementById('feed');
+    const max = Math.max(3, Math.min(20, Number(q.get('n')) || 8));
+    const add = (html, cls = '') => {
+      const el = document.createElement('div');
+      el.className = 'msg shadow ' + cls;
+      el.innerHTML = html;
+      box.appendChild(el);
+      while (box.children.length > max) box.firstChild.remove();
+      // ข้อความเก่าค่อย ๆ จางหายเองหลัง 60 วินาที
+      setTimeout(() => el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 800, fill: 'forwards' }).finished.then(() => el.remove()), 60000);
+    };
+    socket.on('chat', (d) => add(`<b>${esc(d.name)}</b>${esc(d.text)}`));
+    socket.on('gift', (d) => add(`<b>${esc(d.user.name)}</b>ส่ง ${esc(d.gift.name)} x${d.gift.count} 🎁`, 'sys'));
+    socket.on('social', (d) => d.kind === 'follow' && add(`<b>${esc(d.name)}</b>กดติดตาม ➕`, 'sys'));
+  }
+
+  // ---------------------------------------------------------------- top
+  function renderTop(list) {
+    if (W !== 'top') return;
+    const n = Math.max(3, Math.min(10, Number(q.get('n')) || 5));
+    root.innerHTML = `<div id="top" class="shadow"><h3>${esc(q.get('title') || '🏆 ขอบคุณคนให้ของขวัญ')}</h3>${
+      list.length
+        ? list.slice(0, n).map((u, i) => `<div class="r"><i>${i + 1}</i><span>${esc(u.name)}</span><em>${nf(u.diamonds)} 💎</em></div>`).join('')
+        : '<div class="r"><span>ยังไม่มีของขวัญ</span></div>'
+    }</div>`;
+  }
+  socket.on('top', renderTop);
+
+  // ---------------------------------------------------------------- goal (ภารกิจไลฟ์)
+  if (W === 'goal') {
+    const RW = { cheer: '🎉 เชียร์', dance: '💃 เต้น', bow: '🙇 โค้ง', wai: '🙏 ไหว้', bless: '🤚 ให้พร', heart: '🫶 มือหัวใจ', happy: '🥳 ดีใจ', clap: '👏 ปรบมือ', spin: '🌀 หมุนตัว', big: '🔥 โชว์ใหญ่', fireworks: '🎆 พลุ' };
+    root.innerHTML = '<div id="goal" class="shadow"><div class="lbl"><span id="gL">ภารกิจไลฟ์</span><span id="gV"></span></div><div class="bar"><i id="gB"></i></div></div>';
+    socket.on('missions', (m) => {
+      const g = document.getElementById('goal');
+      g.hidden = !m.enabled;
+      g.classList.toggle('done', !!m.allDone);
+      if (m.allDone) {
+        document.getElementById('gL').textContent = '🎉 ภารกิจครบทุกขั้นแล้ว!';
+        document.getElementById('gV').textContent = '';
+        document.getElementById('gB').style.width = '100%';
+        return;
+      }
+      document.getElementById('gL').textContent = `ภารกิจ ${m.idx + 1}/${m.total}: ${m.label} → ${RW[m.reward] || m.reward}`;
+      document.getElementById('gV').textContent = `${nf(m.value)}/${nf(m.target)} ${m.unit}`;
+      document.getElementById('gB').style.width = Math.min(100, (m.value / Math.max(1, m.target)) * 100) + '%';
+    });
+  }
+})();
+</script>
+</body>
+</html>

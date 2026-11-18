@@ -1,0 +1,258 @@
+[
+  {
+    "id": "shrine",
+    "engine": "makeLocalClassicTheme"
+  },
+  {
+    "id": "krathong",
+    "engine": "makeLocalClassicTheme"
+  },
+  {
+    "id": "fishing",
+    "engine": "makeLocalClassicTheme"
+  },
+  {
+    "id": "songkran",
+    "engine": "makeLocalClassicTheme"
+  },
+  {
+    "id": "cny",
+    "engine": "makeLocalClassicTheme"
+  },
+  {
+    "id": "ghost",
+    "engine": "makeLocalClassicTheme"
+  },
+  {
+    "id": "newyear",
+    "engine": "makeLocalClassicTheme"
+  },
+  {
+    "id": "temple",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "floating",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "nightmarket",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "muay",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "beach",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "farm",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "cafe",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "school",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "valentine",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "rocket",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "mother",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "moon",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "cat",
+    "engine": "makePetTheme"
+  },
+  {
+    "id": "shiba",
+    "engine": "makePetTheme"
+  },
+  {
+    "id": "bunny",
+    "engine": "makePetTheme"
+  },
+  {
+    "id": "hamster",
+    "engine": "makePetTheme"
+  },
+  {
+    "id": "penguin",
+    "engine": "makePetTheme"
+  },
+  {
+    "id": "panda",
+    "engine": "makePetTheme"
+  },
+  {
+    "id": "capybara",
+    "engine": "makePetTheme"
+  },
+  {
+    "id": "hippo",
+    "engine": "makePetTheme"
+  },
+  {
+    "id": "elephant",
+    "engine": "makePetTheme"
+  },
+  {
+    "id": "duckling",
+    "engine": "makePetTheme"
+  },
+  {
+    "id": "ramwong",
+    "engine": "makeDanceTheme"
+  },
+  {
+    "id": "pageant",
+    "engine": "makeDanceTheme"
+  },
+  {
+    "id": "molam",
+    "engine": "makeDanceTheme"
+  },
+  {
+    "id": "disco",
+    "engine": "makeDanceTheme"
+  },
+  {
+    "id": "sea",
+    "engine": "makeZooTheme"
+  },
+  {
+    "id": "dino",
+    "engine": "makeZooTheme"
+  },
+  {
+    "id": "safari",
+    "engine": "makeZooTheme"
+  },
+  {
+    "id": "rainforest",
+    "engine": "makeZooTheme"
+  },
+  {
+    "id": "nightzoo",
+    "engine": "makeZooTheme"
+  },
+  {
+    "id": "mookata",
+    "engine": "makeMookataTheme"
+  },
+  {
+    "id": "adventure",
+    "engine": "makeAdventureTheme"
+  },
+  {
+    "id": "boatrace",
+    "engine": "makeMiniTheme"
+  },
+  {
+    "id": "angler",
+    "engine": "makeMiniTheme"
+  },
+  {
+    "id": "village",
+    "engine": "makeMiniTheme"
+  },
+  {
+    "id": "pixelquiz",
+    "engine": "makeMiniTheme"
+  },
+  {
+    "id": "kitchen",
+    "engine": "makeMiniTheme"
+  },
+  {
+    "id": "castle",
+    "engine": "makeMiniTheme"
+  },
+  {
+    "id": "ubosot",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "church",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "mosque",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "cemetery",
+    "engine": "makeLocalClassicTheme"
+  },
+  {
+    "id": "ghostgate",
+    "engine": "makeLocalClassicTheme"
+  },
+  {
+    "id": "rodhae",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "djclub",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "climbcity",
+    "engine": "makeClimbTheme"
+  },
+  {
+    "id": "climbsky",
+    "engine": "makeClimbTheme"
+  },
+  {
+    "id": "wessuwan",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "naga",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "ganesha",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "trimurti",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "caishen",
+    "engine": "makeHudTheme"
+  },
+  {
+    "id": "escape",
+    "engine": "makeEscapeTheme"
+  },
+  {
+    "id": "brawl",
+    "engine": "makeBrawlTheme"
+  },
+  {
+    "id": "pet3d",
+    "engine": "makePet3DTheme"
+  },
+  {
+    "id": "molamstage",
+    "engine": "makeMolamStageTheme"
+  }
+]

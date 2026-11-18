@@ -1,0 +1,57 @@
+LiveStage 1.8.0 baseline
+
+[OK] หน้าหลัก (home)
+[OK] พรีวิว & ทดสอบ🔒 (preview)
+[OK] ธีม (themes)
+[OK] วิดเจ็ตไลฟ์เกม (widgets)
+[OK] ตัวละคร (adm:avatar)
+[OK] เกมในไลฟ์ (adm:live)
+[OK] เกมคอมเมนต์ (adm:games)
+[OK] สร้างธีมเอง (adm:custom)
+[OK] รอเริ่ม / พักเบรก (adm:brk)
+[OK] ขายของ (CF) (adm:cf)
+[OK] คำสั่ง & แต้มคนดู (adm:play)
+[OK] ภารกิจ & สรุปไลฟ์ (adm:summary)
+[OK] เพลงในไลฟ์© (adm:music)
+[OK] เสียง ดนตรี หน้าจอ (adm:stage)
+[OK] ของขวัญ (adm:gifts)
+[OK] ความปลอดภัย! (adm:safety)
+[OK] ทดสอบ🔒 (adm:test)
+[OK] บันทึก (adm:log)
+
+Bundled game/engine files:
+[OK] adventure.js
+[OK] gamebank.js
+[OK] games.js
+[OK] mg/boat.js
+[OK] mg/brawl.js
+[OK] mg/castle.js
+[OK] mg/climb.js
+[OK] mg/escape.js
+[OK] mg/fish.js
+[OK] mg/kitchen.js
+[OK] mg/pet.js
+[OK] mg/quiz.js
+[OK] mg/village.js
+[OK] minigames.js
+[OK] play.js
+[OK] public/adventure-engine.js
+[OK] public/brawl-engine.js
+[OK] public/climb-engine.js
+[OK] public/dance-engine.js
+[OK] public/escape-engine.js
+[OK] public/hud-engine.js
+[OK] public/mg/boat.js
+[OK] public/mg/castle.js
+[OK] public/mg/fish.js
+[OK] public/mg/kitchen.js
+[OK] public/mg/quiz.js
+[OK] public/mg/village.js
+[OK] public/minigame-engine.js
+[OK] public/molam-engine.js
+[OK] public/mookata-engine.js
+[OK] public/pet-engine.js
+[OK] public/pet3d-engine.js
+[OK] public/zoo-engine.js
+
+All extracted source files are listed in upstream-manifest.json.

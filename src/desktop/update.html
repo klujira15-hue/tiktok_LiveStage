@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'unsafe-inline'; font-src 'self'">
+<title>กำลังอัปเดต Live Stage</title>
+<link rel="stylesheet" href="../public/fonts/fonts.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: #0b0b0c; color: #f4f1ec; font: 15px/1.5 'Thai LoChula', 'IBM Plex Sans Thai', 'Leelawadee UI', sans-serif;
+    display: flex; flex-direction: column; justify-content: center; gap: 14px; padding: 28px 32px; -webkit-app-region: drag; user-select: none; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+  .brand b { color: #e8453c; }
+  .brand svg { width: 32px; height: 32px; }
+  h1 { margin: 0; font-size: 22px; font-weight: 700; }
+  .muted { color: #a8a29a; font-size: 13px; }
+  .bar { height: 10px; border-radius: 99px; background: #1d1a19; overflow: hidden; border: 1px solid #2a2623; }
+  .fill { height: 100%; width: 0%; background: #e8453c; transition: width .3s; }
+  .bar.wait .fill { width: 30%; animation: slide 1.2s ease-in-out infinite alternate; }
+  @keyframes slide { from { margin-left: 0; } to { margin-left: 70%; } }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  button { -webkit-app-region: no-drag; background: #1d1a19; color: #f4f1ec; border: 1px solid #2a2623; border-radius: 10px; padding: 8px 14px; font: inherit; font-size: 13px; cursor: pointer; }
+  button:hover { border-color: #4a443f; }
+  button:focus-visible { outline: 2px solid #ffd166; outline-offset: 2px; }
+</style>
+</head>
+<body>
+  <div class="brand"><svg viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#e8453c"/><g fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11V29Q21 37 29 37H32"/><path d="M13.5 19.5H30"/></g><circle cx="36" cy="12" r="4.5" fill="#ffd166"/></svg><span>tubhool<b>.</b></span><span class="muted" style="font-weight:400">Live Stage</span></div>
+  <h1 id="title">กำลังอัปเดตเป็นเวอร์ชันใหม่</h1>
+  <div class="bar wait" id="bar"><div class="fill" id="fill"></div></div>
+  <div class="row">
+    <span class="muted" id="status" role="status">กำลังเริ่มดาวน์โหลด…</span>
+    <button type="button" id="skip">ข้ามไปก่อน</button>
+  </div>
+  <div class="muted" id="note"></div>
+<script>
+  const q = new URLSearchParams(location.search);
+  const $ = (id) => document.getElementById(id);
+  $('note').textContent = `เวอร์ชัน ${q.get('cur') || '-'} → ${q.get('v') || '-'} • เสร็จแล้วโปรแกรมจะเปิดใหม่เอง ไม่ต้องกดติดตั้ง`;
+  const mb = (b) => (b / 1048576).toFixed(b > 104857600 ? 0 : 1);
+  window.setProgress = (pct, done, total, speed) => {
+    $('bar').classList.remove('wait');
+    $('fill').style.width = Math.max(2, Math.min(100, pct)) + '%';
+    $('status').textContent = `${Math.floor(pct)}% • ${mb(done)} / ${mb(total)} MB${speed ? ` • ${mb(speed)} MB/วิ` : ''}`;
+  };
+  window.setInstalling = () => {
+    $('bar').classList.remove('wait');
+    $('fill').style.width = '100%';
+    $('title').textContent = 'กำลังติดตั้ง…';
+    $('status').textContent = 'โปรแกรมจะปิดแล้วเปิดใหม่ภายในไม่กี่วินาที';
+    $('skip').hidden = true;
+  };
+  window.setFailed = () => {
+    $('bar').classList.remove('wait');
+    $('title').textContent = 'อัปเดตไม่สำเร็จ';
+    $('status').textContent = 'เปิดเวอร์ชันเดิมไปก่อน — จะลองใหม่ภายหลัง';
+    $('skip').hidden = true;
+  };
+  $('skip').onclick = () => window.close();
+</script>
+</body>
+</html>

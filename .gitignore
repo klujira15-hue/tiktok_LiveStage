@@ -1,0 +1,31 @@
+# Installed dependencies and runtime caches
+node_modules/
+.cache/
+.local/
+reference-runtime/
+portable/
+exports/
+# Credentials and personal data
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.pending
+*key.bin
+Cookies*
+Login Data*
+*.log
+TestVoice.zip
+# Local audit output, recordings, and withdrawn experiments
+docs/*
+!docs/local-release-manifest.json
+!docs/local-theme-manifest.json
+!docs/CURRENT-SCOPE.txt
+!docs/MENU-AND-GAME-CHECKLIST.txt
+custom/characters/source/
+EXPORT-README.txt
+# Machine-specific live account diagnostic
+tools/connect-current-account-check.cjs

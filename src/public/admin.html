@@ -1,0 +1,1452 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Live Stage Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root {
+    --bg: #0c0a16; --side: #110e1f; --card: #17132a; --line: #2a2445; --text: #ece8ff; --muted: #9a92c0;
+    --accent: #ff4fa3; --accent2: #8b5cff; --ok: #3dff9e; --warn: #ffd23f; --bad: #ff4d6d;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: 'Kanit', 'Leelawadee UI', Tahoma, sans-serif; font-size: 15px; }
+  button, input, select { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+  .app { display: grid; grid-template-columns: 220px 1fr 380px; height: 100vh; }
+
+  aside { background: var(--side); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 18px 12px; gap: 4px; }
+  .brand { font-size: 24px; font-weight: 800; line-height: 1.1; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; padding: 0 8px; }
+  .brand-sub { font-size: 12px; color: var(--muted); padding: 2px 8px 10px; }
+  .cur-theme { margin: 0 4px 12px; padding: 8px 10px; border-radius: 10px; background: #1c1733; border: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  .cur-theme b { color: var(--text); font-size: 15px; }
+  .nav { all: unset; cursor: pointer; display: flex; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 10px; color: #cfc8f0; }
+  .nav:hover { background: #1c1733; }
+  .nav.on { background: linear-gradient(90deg, rgba(255,79,163,.22), rgba(139,92,255,.12)); color: #fff; box-shadow: inset 3px 0 0 var(--accent); }
+  .spacer { flex: 1; }
+  .side-status { font-size: 13px; color: var(--muted); padding: 8px; border-top: 1px solid var(--line); }
+
+  main { overflow: auto; }
+  .topbar { display: flex; gap: 22px; padding: 14px 28px; border-bottom: 1px solid var(--line); background: #0f0c1c; position: sticky; top: 0; z-index: 2; }
+  .stat .k { font-size: 12px; color: var(--muted); }
+  .stat .v { font-weight: 600; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; background: var(--muted); }
+  .dot.connected { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .dot.connecting { background: var(--warn); }
+  .dot.offline, .dot.error { background: var(--bad); }
+
+  .page { display: none; padding: 24px 28px 40px; max-width: 1000px; }
+  .page.on { display: block; }
+  h1 { margin: 0 0 4px; font-size: 28px; color: var(--warn); }
+  .lead { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+  .card h2 { margin: 0 0 12px; font-size: 17px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .field { margin-bottom: 12px; }
+  input:not([type]), input[type=text], input[type=number], input[type=password], select {
+    width: 100%; background: #0d0b18; border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; outline: none;
+  }
+  input:focus, select:focus { border-color: var(--accent2); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .btn { cursor: pointer; border: 1px solid var(--line); background: #1d1835; border-radius: 9px; padding: 8px 14px; text-decoration: none; color: inherit; }
+  .btn:hover { border-color: var(--accent2); }
+  .btn.primary { background: linear-gradient(90deg, var(--accent), var(--accent2)); border: 0; font-weight: 600; }
+  .btn.warn { background: var(--warn); color: #241a00; border: 0; font-weight: 600; }
+  .btn.danger { background: #3a1420; border-color: #6d2236; color: #ffb3c4; }
+  .btn.sm { padding: 5px 10px; font-size: 13px; }
+  .btn:disabled { opacity: .6; cursor: default; }
+  .check { display: flex; align-items: center; gap: 8px; margin: 6px 0; color: var(--text); font-size: 15px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .lg-head { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: linear-gradient(90deg, rgba(139,92,255,.22), var(--card)); }
+  .lg-ic { font-size: 46px; line-height: 1; }
+  .lg-nm { font-size: 26px; font-weight: 800; }
+  .lg-chips { flex: 1; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+  .lg-chip { padding: 5px 11px; border-radius: 999px; background: #1d1835; border: 1px solid var(--line); font-size: 13px; white-space: nowrap; }
+  .lg-chip.warn { border-color: var(--bad); color: #ffb3c4; }
+  .lg-pick { display: flex; flex-direction: column; gap: 4px; margin: 0; min-width: 190px; }
+  .lg-grid { display: grid; grid-template-columns: 1fr 1fr 300px; gap: 16px; align-items: start; }
+  .lg-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .lg-tile { text-align: left; display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: 12px; }
+  .lg-tile b { font-size: 15px; white-space: nowrap; }
+  .lg-tile span { font-size: 12px; color: var(--muted); }
+  .lg-live .ln { display: flex; justify-content: space-between; gap: 10px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+  .lg-live .ln.warn { color: #ff8fa0; }
+  .lg-live .bar { height: 8px; border-radius: 99px; background: #0d0b18; overflow: hidden; margin: 4px 0 8px; }
+  .lg-live .bar i { display: block; height: 100%; background: linear-gradient(90deg, #3dff9e, #2bb8ff); }
+  .lg-queue { display: flex; flex-direction: column; gap: 8px; }
+  .lg-qh { display: flex; justify-content: space-between; align-items: center; }
+  .lg-qh h2 { margin: 0; }
+  .lg-qlist { display: flex; flex-direction: column; gap: 6px; }
+  .lg-qi { display: flex; align-items: center; gap: 6px; padding: 7px 8px; border-radius: 10px; background: #1d1835; border: 1px solid var(--line); font-size: 14px; }
+  .lg-qi.now { border-color: var(--ok); background: rgba(61,255,158,.08); }
+  .lg-qi .nm { flex: 1; }
+  .lg-qi button { padding: 2px 7px; }
+  .lg-acc summary { cursor: pointer; font-size: 15px; font-weight: 600; }
+  .lg-acc[open] summary { margin-bottom: 10px; }
+  @media (max-width: 1250px) { .lg-grid { grid-template-columns: 1fr 1fr; } .lg-queue { grid-column: 1 / -1; } }
+  .qa-box { margin: 12px 0; padding: 12px 14px; border-radius: 12px; background: rgba(255,209,102,.08); border: 1px dashed rgba(255,209,102,.5); }
+  .qa-h { font-size: 13px; color: #ffd166; font-weight: 700; }
+  .qa-a { font-size: 26px; font-weight: 800; margin: 4px 0; }
+  code { background: #0d0b18; border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; font-size: 13px; }
+  .saved { color: var(--ok); font-size: 13px; margin-left: 8px; opacity: 0; transition: opacity .3s; }
+  .saved.on { opacity: 1; }
+  /* ความปลอดภัยระหว่างไลฟ์ */
+  .nlock, .ncr, .nwarn { margin-left: 6px; padding: 0 6px; border-radius: 9px; font-size: 11px; font-weight: 800; }
+  .ncr { background: #3a2a10; color: #ffb020; border: 1px solid #6a4a1a; }
+  .nwarn { background: #ffb020; color: #241600; box-shadow: 0 0 8px rgba(255,176,32,.6); }
+  .test-lock { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; padding: 14px 16px; border-radius: 14px; background: #2a1012; border: 2px solid #ff4d6d; color: #ffd6dc; font-size: 15px; line-height: 1.6; }
+  #page-test.locked .card { opacity: .35; filter: grayscale(.6); pointer-events: none; }
+  .m-cr { display: grid; grid-template-columns: 60px 1fr; gap: 14px; margin-bottom: 12px; padding: 16px 18px; border-radius: 16px; background: linear-gradient(135deg, #3a1210, #2a0c18); border: 2px solid #ff5a4f; box-shadow: 0 0 24px rgba(255,90,79,.2); }
+  .m-cr .ic { position: relative; width: 60px; height: 60px; border-radius: 16px; background: #ff5a4f; display: grid; place-items: center; font-size: 30px; font-weight: 800; color: #fff; }
+  .m-cr .ic small { position: absolute; right: -6px; bottom: -6px; width: 26px; height: 26px; border-radius: 50%; background: #ffd23f; color: #241600; display: grid; place-items: center; font-size: 15px; border: 2px solid #3a1210; }
+  .m-cr h3 { margin: 0 0 4px; font-size: 19px; color: #ffd0cc; } .m-cr ul { margin: 0; padding-left: 18px; color: #f0dedb; line-height: 1.7; }
+  .m-ack { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; padding: 10px 14px; border-radius: 12px; background: #1d1835; border: 1px dashed #6a4a40; cursor: pointer; }
+  .m-ack.done { border-style: solid; border-color: #2f6a4a; background: #142a20; }
+  .m-ack .muted { margin-left: auto; font-size: 13px; }
+  .m-drop.off { opacity: .45; pointer-events: none; }
+  /* เพลงในไลฟ์ */
+  .m-now { display: grid; grid-template-columns: 64px 1fr auto; gap: 14px; align-items: center; padding: 14px; border-radius: 14px; background: linear-gradient(135deg, #2a1640, #1a1230); border: 1px solid #3a2a5a; }
+  .m-cover { width: 64px; height: 64px; border-radius: 12px; display: grid; place-items: center; font-size: 30px; background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+  .m-mid { min-width: 0; }
+  .m-sub { font-size: 13px; display: flex; align-items: center; gap: 6px; }
+  .m-title { font-size: 18px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .m-mid input[type=range] { width: 100%; margin: 6px 0 0; accent-color: var(--accent); }
+  .m-time { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .m-ctrl { display: flex; gap: 8px; align-items: center; }
+  .m-c { all: unset; cursor: pointer; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; background: #2a2245; font-size: 17px; }
+  .m-c:hover { background: #3a3060; }
+  .m-c.big { width: 54px; height: 54px; font-size: 22px; background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+  .m-eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 13px; }
+  .m-eq i { width: 3px; background: var(--accent); border-radius: 1px; animation: meq .8s ease-in-out infinite alternate; }
+  .m-eq i:nth-child(2) { animation-delay: -.3s; } .m-eq i:nth-child(3) { animation-delay: -.6s; } .m-eq i:nth-child(4) { animation-delay: -.15s; }
+  @keyframes meq { from { height: 3px; } to { height: 13px; } }
+  .m-warn { margin-top: 10px; padding: 8px 12px; border-radius: 10px; background: rgba(255,210,63,.1); border: 1px solid rgba(255,210,63,.4); color: #ffe9a6; font-size: 14px; }
+  .m-vol { display: grid; grid-template-columns: 260px 1fr 52px; gap: 10px; align-items: center; margin-top: 12px; }
+  .m-vol input { width: 100%; accent-color: var(--ok); }
+  .m-drop { border: 2px dashed #4a3f72; border-radius: 14px; padding: 16px; text-align: center; background: #120f22; transition: border-color .2s, background .2s; }
+  .m-drop.over { border-color: var(--accent); background: #1d1430; }
+  .m-upmsg { margin-top: 8px; font-size: 14px; color: var(--ok); min-height: 1em; }
+  .m-list { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .m-row { display: grid; grid-template-columns: 18px 26px 30px 1fr 64px auto; gap: 10px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); background: #141026; }
+  .m-row:first-child { border-top: 0; }
+  .m-row.on { background: linear-gradient(90deg, rgba(255,79,163,.18), rgba(139,92,255,.08)); }
+  .m-row.drag { opacity: .5; }
+  .m-h { color: #5d5486; cursor: grab; } .m-n { color: var(--muted); text-align: right; } .m-ic { font-size: 18px; text-align: center; }
+  .m-tt { min-width: 0; } .m-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .m-tt small { color: var(--muted); font-size: 12px; }
+  .m-d { color: var(--muted); text-align: right; font-size: 13px; }
+  .m-act { display: flex; gap: 6px; }
+  .m-empty { padding: 18px; text-align: center; color: var(--muted); }
+  .m-copy { margin-top: 12px; padding: 10px 14px; border-radius: 12px; background: rgba(255,210,63,.08); border: 1px solid rgba(255,210,63,.35); color: #ffe9a6; font-size: 14px; }
+  textarea { width: 100%; background: #0d0b18; border: 1px solid var(--line); border-radius: 9px; padding: 9px 12px; outline: none; font: inherit; color: inherit; resize: vertical; }
+  textarea:focus { border-color: var(--accent2); }
+  .hint-preview { background: #0d0b18; border: 1px dashed var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+  .hint-preview ol { margin: 6px 0 0; padding-left: 20px; line-height: 1.7; }
+  .hint-preview .off { color: var(--muted); }
+  .big-switch { font-size: 22px; font-weight: 800; }
+  .big-switch input { width: 22px; height: 22px; }
+  .safe-card.on { border-color: var(--ok); box-shadow: 0 0 0 3px rgba(61,255,158,.15); }
+  .mod-list { max-height: 320px; overflow: auto; font-size: 14px; }
+  .mod-item { display: flex; gap: 8px; align-items: flex-start; padding: 6px 0; border-top: 1px solid var(--line); }
+  .mod-item:first-child { border-top: 0; }
+  .mod-item .mt { flex: 1; min-width: 0; line-height: 1.45; word-break: break-word; }
+  .mod-item .mt b { color: var(--text); }
+  .mod-item.hid .mt { color: #ff9fb0; }
+  .mod-item .why { font-size: 12px; color: var(--warn); }
+  .ck-item { display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; line-height: 1.45; cursor: pointer; }
+  .ck-item input { margin-top: 4px; }
+  .mic-meter { position: relative; height: 16px; border-radius: 99px; background: #0d0b18; border: 1px solid var(--line); overflow: hidden; }
+  .mic-meter i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, var(--ok), var(--warn)); transition: width .1s; }
+  .mic-meter b { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #fff; }
+  #silenceAlert { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 50; display: none; padding: 14px 26px; border-radius: 16px;
+    background: linear-gradient(90deg, #ff4d6d, #ff9f1a); color: #fff; font-size: 20px; font-weight: 800; box-shadow: 0 8px 30px rgba(0,0,0,.5); }
+  #silenceAlert.on { display: block; animation: pulseA 1s ease-in-out infinite alternate; }
+  @keyframes pulseA { to { transform: translateX(-50%) scale(1.04); } }
+  #liveAlert { position: fixed; left: 50%; top: 70px; transform: translateX(-50%); z-index: 51; display: none; padding: 14px 26px; border-radius: 16px;
+    background: linear-gradient(90deg, #d7263d, #ff4d6d); color: #fff; font-size: 19px; font-weight: 800; box-shadow: 0 8px 30px rgba(0,0,0,.5); max-width: 90vw; }
+  #liveAlert.on { display: block; animation: pulseA 1s ease-in-out infinite alternate; }
+  .pre-item { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; border-top: 1px solid var(--line); line-height: 1.45; }
+  .pre-item:first-child { border-top: 0; }
+  .pre-item .pi { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: #2a2445; color: var(--muted); }
+  .pre-item.ok .pi { background: var(--ok); color: #04201a; }
+  .pre-item.warn .pi { background: var(--warn); color: #241a00; }
+  .pre-item.bad .pi { background: var(--bad); color: #fff; }
+  .pre-item.bad b { color: #ffb3c4; }
+  .sum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .sum-grid > div { background: #0d0b18; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .sum-grid b { display: block; font-size: 22px; }
+  .ms-tbl td:first-child { width: 48px; }
+  .ms-tbl select { min-width: 190px; }
+  .past-tbl td:first-child { width: auto; }
+  .ms-tbl tr:first-child td, .past-tbl tr:first-child td { color: var(--muted); font-size: 13px; }
+  .past-tbl td { font-size: 14px; }
+  .ch-list { margin: 6px 0 10px; padding-left: 22px; line-height: 1.75; }
+  .auto-status { margin: 0 0 14px; padding: 10px 14px; border-radius: 10px; background: #1b1534; border: 1px solid var(--line); font-weight: 600; }
+  .auto-status[data-phase="wait"] { border-color: #3dff9e66; }
+  .auto-status[data-phase="announce"] { border-color: var(--gold, #ffd23f); background: #2a2210; }
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl td { padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  .tbl td:first-child { width: 45%; }
+  .tbl select { width: 100%; }
+  .cf-tbl td, .cf-orders td { width: auto !important; white-space: nowrap; }
+  .cf-tbl input { width: 100%; min-width: 60px; }
+  .cf-tbl tr.on td { background: rgba(232,69,60,.12); }
+  .cf-orders tr.cancel td { opacity: .5; text-decoration: line-through; }
+  .cf-lock { display: flex; align-items: center; gap: 14px; border: 1px solid #ffd166; background: rgba(255,209,102,.08); }
+  .cf-lock-ic { font-size: 30px; }
+  #page-cf.locked .cf-body { opacity: .45; pointer-events: none; filter: grayscale(.4); }
+  .cf-drop { display: flex; align-items: center; gap: 14px; padding: 12px 16px; margin: 6px 0 12px; border: 2px dashed var(--line); border-radius: 14px; }
+  .cf-drop.over { border-color: #ffd166; background: rgba(255,209,102,.08); }
+  .cf-drop-ic { font-size: 28px; }
+  .cf-img { width: 64px; height: 64px; border-radius: 10px; border: 2px dashed var(--line); background: transparent; color: var(--muted); cursor: pointer; padding: 0; position: relative; overflow: hidden; font: inherit; font-size: 12px; }
+  .cf-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cf-img.has { border-style: solid; }
+  .cf-img .ov { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: rgba(0,0,0,.65); font-size: 11px; font-weight: 700; }
+  .cf-img.has:hover .ov { display: flex; }
+  .cf-img .ov span { padding: 1px 6px; border-radius: 5px; background: #f4f1ec; color: #1a1817; }
+  .cf-img .ov span.rm { background: #e8453c; color: #fff; }
+  .cf-tbl tr.drag td { background: rgba(255,209,102,.1); }
+  .cf-tbl tr.sel td:first-child { box-shadow: inset 3px 0 0 #ffd166; }
+  .mv-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .mv-row b { flex: 1; word-break: break-all; }
+  .badge { display: inline-block; font-size: 13px; padding: 2px 10px; border-radius: 99px; background: #241d42; border: 1px solid var(--line); margin-left: 6px; vertical-align: middle; color: var(--text); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font-weight: 600; color: var(--muted); font-size: 13px; padding: 6px; }
+  td { padding: 5px 6px; border-top: 1px solid var(--line); }
+  td input, td select { padding: 7px 9px; }
+
+  .themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+  .theme-card { background: var(--card); border: 2px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+  .theme-card.on { border-color: var(--ok); box-shadow: 0 0 0 3px rgba(61,255,158,.15); }
+  .theme-card .shot { position: relative; aspect-ratio: 9 / 16; background: #07050e; }
+  .theme-card .shot iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; pointer-events: none; }
+  .theme-card .info { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .theme-card .nm { font-size: 19px; font-weight: 800; }
+  .theme-card .ds { font-size: 13px; color: var(--muted); flex: 1; }
+
+  .song-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .song-item:first-child { border-top: 0; }
+  .song-item .n { color: var(--accent); font-weight: 800; width: 24px; }
+  .song-item .t { flex: 1; }
+
+  .log { font-size: 13px; max-height: 70vh; overflow: auto; }
+  .log div { padding: 4px 0; border-top: 1px solid #1f1a35; }
+  .log .tm { color: var(--muted); margin-right: 8px; }
+  .log .gift { color: var(--warn); }
+  .log .error { color: var(--bad); }
+  .log .system { color: #8fd8ff; }
+  .log .song { color: var(--ok); }
+
+  .preview { border-left: 1px solid var(--line); background: #07050e; display: flex; flex-direction: column; }
+  .preview-head { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+  .preview-head a { color: var(--accent); }
+  .preview-frame { flex: 1; position: relative; }
+  .preview-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+  @media (max-width: 1100px) { .app { grid-template-columns: 200px 1fr; } .preview { display: none; } }
+  /* ?embed = เปิดอยู่ในหน้าต่างโปรแกรม Live Stage (มีเมนูของโปรแกรมแล้ว) */
+  body.embed .app { grid-template-columns: 1fr; height: auto; min-height: 100vh; }
+  body.embed aside, body.embed .preview, body.embed .topbar { display: none; }
+  body.embed .page { max-width: none; }
+  /* สีชุดเดียวกับ tubhool.com เมื่ออยู่ในโปรแกรม Live Stage */
+  body.embed { --bg: #0b0b0c; --side: #0b0b0c; --card: #161413; --line: #2a2623; --text: #f4f1ec; --muted: #a8a29a;
+    --accent: #e8453c; --accent2: #f0b252; --ok: #4fc483; --warn: #ffd166; --bad: #ff7a72;
+    font-family: 'Thai LoChula', 'IBM Plex Sans Thai', 'Leelawadee UI', 'Thonburi', system-ui, sans-serif; background: var(--bg); }
+  body.embed .card { border-radius: 24px; padding: 20px; }
+  body.embed .btn { background: #1d1a19; border-color: var(--line); border-radius: 12px; }
+  body.embed .btn:hover { border-color: #4a443f; }
+  body.embed .btn.primary { background: var(--accent); color: #fff; }
+  body.embed .btn.primary:hover { background: #f05a50; }
+  body.embed .btn.warn { background: var(--warn); color: #141312; }
+  body.embed .btn.danger { background: #2a1c1a; border-color: #5a2a26; color: #ffb3ad; }
+  body.embed input, body.embed select, body.embed textarea { background: #0b0b0c; border-color: var(--line); color: var(--text); border-radius: 10px; }
+  body.embed .badge, body.embed .auto-status, body.embed .cur-theme { background: #1d1a19; border-color: var(--line); }
+  body.embed h1 { font-weight: 700; }
+  body.embed a { color: var(--warn); }
+  body.embed code, body.embed .hint-preview, body.embed .mic-meter, body.embed .sum-grid > div { background: #0b0b0c; }
+  body.embed .nav:hover { background: #1d1a19; }
+  body.embed .lg-head { background: linear-gradient(90deg, rgba(240,90,80,.16), var(--card)); }
+  body.embed .lg-chip, body.embed .lg-qi { background: #1d1a19; }
+  body.embed .lg-qi.now { background: rgba(61,255,158,.07); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">🎤 Live Stage</div>
+    <div class="brand-sub">ระบบหน้าไลฟ์ TikTok</div>
+    <div class="cur-theme">ธีมตอนนี้<br><b id="curTheme">-</b></div>
+    <button class="nav on" data-page="theme">🎭 เลือกธีม</button>
+    <button class="nav" data-page="connect">📡 เชื่อมต่อไลฟ์</button>
+    <button class="nav" data-page="pre">✅ เช็คก่อนไลฟ์ <span id="preNav" class="muted"></span></button>
+    <button class="nav" data-page="gifts">🎁 ของขวัญ</button>
+    <button class="nav" data-page="stage">🎛️ ตั้งค่าหน้าไลฟ์</button>
+    <button class="nav" data-page="songs"><span id="navQueue">🎵 คิวขอเพลง</span> <span id="songCount" class="muted"></span></button>
+    <button class="nav" data-page="music">🎶 เพลงในไลฟ์ <span class="ncr" title="ใช้เฉพาะเพลงที่มีสิทธิ์">©</span></button>
+    <button class="nav" data-page="live" data-feature="games">🕹️ เกมในไลฟ์ <span id="lgNav" class="muted"></span></button>
+    <button class="nav" data-page="games">🎮 เกมคอมเมนต์ <span id="gameLive" class="muted"></span></button>
+    <button class="nav" data-page="custom" data-feature="custom">🎨 สร้างธีมเอง</button>
+    <button class="nav" data-page="brk">⏳ รอเริ่ม / พักเบรก</button>
+    <button class="nav" data-page="cf">🛒 ขายของ (CF)</button>
+    <button class="nav" data-page="play">🛍️ คำสั่ง & แต้มคนดู</button>
+    <button class="nav" data-page="summary">🎯 ภารกิจ & สรุปไลฟ์</button>
+    <button class="nav" data-page="safety">🛡️ ความปลอดภัย <span id="safeNav" class="muted"></span></button>
+    <button class="nav" data-page="avatar">🧍 ตัวละคร 3D</button>
+    <button class="nav" data-page="test">🧪 ทดสอบ <span class="nlock" data-live-lock hidden title="ปิดปุ่มทดสอบระหว่างไลฟ์จริง">🔒</span></button>
+    <button class="nav" data-page="log">📜 บันทึก</button>
+    <div class="spacer"></div>
+    <div class="side-status">ใช้ทดสอบได้โดยไม่ต้องเปิดไลฟ์</div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="stat"><div class="k">TikTok</div><div class="v"><span class="dot" id="dot"></span><span id="statusText">ยังไม่เชื่อมต่อ</span></div></div>
+      <div class="stat"><div class="k">ผู้ชมในไลฟ์</div><div class="v" id="viewers">0</div></div>
+      <div class="stat"><div class="k">คนในฉาก</div><div class="v" id="crowdCount">0</div></div>
+      <div class="stat"><div class="k">ไลก์</div><div class="v" id="likes">0</div></div>
+    </div>
+
+    <!-- ธีม -->
+    <section class="page on" id="page-theme">
+      <h1>เลือกธีมไลฟ์</h1>
+      <p class="lead">เปลี่ยนหน้ากากของไลฟ์ได้ตลอด กด "ใช้ธีมนี้" แล้วหน้าเวทีทุกจอ (รวมใน OBS / TikTok LIVE Studio) จะเปลี่ยนตามทันที ลิงก์เดิมไม่ต้องเปลี่ยน
+        คนดูที่อยู่ในฉากและ Top 5 ยังอยู่ ส่วนของขวัญ ข้อความ และคำขอ แต่ละธีมตั้งแยกกันได้</p>
+      <div class="themes" id="themeCards"></div>
+    </section>
+
+    <!-- เชื่อมต่อ -->
+    <section class="page" id="page-connect">
+      <h1>เชื่อมต่อไลฟ์</h1>
+      <p class="lead">ใส่ชื่อผู้ใช้ TikTok ของช่องที่กำลังไลฟ์ ระบบจะดึงคอมเมนต์ ของขวัญ ไลก์ และผู้ติดตามมาแสดงบนหน้าไลฟ์ทันที</p>
+      <div class="card">
+        <div class="field">
+          <label>ไลฟ์บน</label>
+          <select id="platform"><option value="tiktok">TikTok</option><option value="youtube" data-feature="youtube">YouTube</option></select>
+        </div>
+        <div class="field" id="ttField">
+          <label>ชื่อผู้ใช้ TikTok (ไม่ต้องใส่ @ ก็ได้)</label>
+          <input type="text" id="username" placeholder="เช่น mychannel" />
+        </div>
+        <div class="field" id="ytField" hidden>
+          <label>ช่อง YouTube (@ชื่อช่อง) หรือลิงก์ไลฟ์</label>
+          <input type="text" id="ytTarget" placeholder="เช่น @mychannel หรือ https://www.youtube.com/watch?v=..." />
+          <p class="muted">Super Chat / Super Sticker = ของขวัญ (เทียบเป็นเพชร) • สมาชิกใหม่ = ผู้ติดตาม • YouTube ไม่ส่งหัวใจ/แชร์ • อ่านแชทจากหน้าเว็บสาธารณะ ไม่ใช่ API ทางการ</p>
+        </div>
+        <div class="field">
+          <label>Euler Stream API key (ไม่บังคับ — ใส่เมื่อเชื่อมต่อบ่อยแล้วโดนจำกัด)</label>
+          <input type="password" id="signApiKey" placeholder="เว้นว่างได้" autocomplete="off" />
+        </div>
+        <div class="row">
+          <button class="btn primary" id="btnConnect">▶ เริ่มเชื่อมต่อ</button>
+          <button class="btn danger" id="btnDisconnect">■ ตัดการเชื่อมต่อ</button>
+          <span class="muted">ถ้ายังไม่ได้เปิดไลฟ์ ระบบจะลองเชื่อมใหม่ทุก 20 วินาที</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>เอาหน้าเวทีไปขึ้นไลฟ์</h2>
+        <p class="muted" style="margin-top:0">หน้าเวทีอยู่ที่ <code id="stageUrl"></code> ขนาด 1080×1920 (แนวตั้ง) — ใช้ลิงก์เดียวทุกธีม</p>
+        <ul class="muted" style="line-height:1.8;padding-left:18px;margin:0">
+          <li><b style="color:var(--text)">OBS / Streamlabs</b>: เพิ่ม Browser Source → ใส่ลิงก์ด้านบน → กว้าง 1080 สูง 1920 → ติ๊ก "Control audio via OBS" ถ้าต้องการเสียงเอฟเฟกต์</li>
+          <li><b style="color:var(--text)">TikTok LIVE Studio</b>: เพิ่มแหล่ง <b style="color:var(--text)">"ลิงก์ (Link)"</b> → วางลิงก์ด้านบน → ตั้งขนาด 1080 × 1920 แล้วเลือก <b style="color:var(--text)">Fill</b> (ลูกศร ˅ ข้างปุ่ม ⤢ บนแถบเครื่องมือ) ให้เต็มจอ (คมชัดเต็มที่ — อย่าใช้ Window Capture จะเบลอ)<br>
+            ถ้าในไลฟ์ไม่มีเสียง หรือเห็นป้าย "คลิกที่จอเพื่อเปิดเสียง": ใช้ลิงก์ <code>stage.html?silent</code> ในแหล่ง Link แทน แล้วเปิด <code>stage.html</code> อีกแท็บในเบราว์เซอร์ไว้ให้เสียงออก (คลิก 1 ครั้ง) ให้ LIVE Studio จับเสียงคอมพิวเตอร์</li>
+        </ul>
+        <div class="row" style="margin-top:12px"><a class="btn" id="openStage" target="_blank">↗ เปิดหน้าเวที</a></div>
+      </div>
+      <div class="card">
+        <h2>📱 ไลฟ์จากมือถือ (แชร์หน้าจอ)</h2>
+        <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+          <label class="check" id="lanToggleRow" style="display:none;width:100%"><input type="checkbox" id="lanAccess" /> <b>เปิดให้มือถือในวง Wi-Fi เดียวกันเข้าได้</b> — ต้องปิดแล้วเปิดโปรแกรมใหม่ • Windows จะถามเรื่อง Firewall ให้กด “อนุญาต” <span class="saved" id="lanSaved">บันทึกแล้ว ✓ ปิดแล้วเปิดโปรแกรมใหม่</span></label>
+          <div id="lanQr" style="background:#fff;padding:10px;border-radius:12px;width:200px;height:200px;flex:none"></div>
+          <div style="flex:1;min-width:260px">
+            <ol class="muted" style="line-height:1.9;padding-left:18px;margin:0">
+              <li>ให้มือถือต่อ <b style="color:var(--text)">Wi-Fi เดียวกับคอมเครื่องนี้</b> (เน็ตมือถือ 4G/5G ใช้ไม่ได้)</li>
+              <li>สแกน QR หรือเปิดลิงก์ <code id="lanStage">-</code> ในมือถือ</li>
+              <li>แตะ <b style="color:var(--text)">"แตะเพื่อเริ่ม"</b> → หน้าเวทีเต็มจอ เปิดเสียง กันจอดับ<br>
+                iPhone: กด แชร์ ⬆️ → <b style="color:var(--text)">เพิ่มไปยังหน้าจอโฮม</b> แล้วเปิดจากไอคอน จะไม่มีแถบเบราว์เซอร์</li>
+              <li>เปิด <b style="color:var(--text)">ห้ามรบกวน</b> แล้วในแอป TikTok เลือกไลฟ์แบบ <b style="color:var(--text)">เกมมือถือ / แชร์หน้าจอ</b> สลับกลับมาที่หน้าเวที</li>
+            </ol>
+            <p class="muted" style="margin:10px 0 0">คุมหลังบ้านจากมือถืออีกเครื่องได้ที่ <code id="lanAdmin">-</code><br>
+              เปิดในมือถือไม่ได้? ตอนเปิดเซิร์ฟเวอร์ครั้งแรก Windows จะถามเรื่อง Firewall ต้องกด <b style="color:var(--text)">อนุญาต (Allow)</b> สำหรับเครือข่ายส่วนตัว</p>
+            <div id="lanOthers" class="muted" style="margin-top:6px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ของขวัญ -->
+    <section class="page" id="page-gifts">
+      <h1>ของขวัญ → เอฟเฟกต์ <span class="badge" id="giftsTheme"></span></h1>
+      <p class="lead">ตั้งของขวัญแยกตามธีม จับคู่ชื่อของขวัญ TikTok (ภาษาอังกฤษ ตรงตามที่ TikTok ส่งมา) กับเอฟเฟกต์ ของขวัญที่ไม่อยู่ในตาราง จะเลือกเอฟเฟกต์ตามมูลค่าเพชรให้อัตโนมัติ</p>
+      <div class="card">
+        <table>
+          <thead><tr><th>ชื่อของขวัญ</th><th style="width:110px">เพชร 💎</th><th style="width:250px">เอฟเฟกต์</th><th style="width:130px"></th></tr></thead>
+          <tbody id="giftRows"></tbody>
+        </table>
+        <div class="row" style="margin-top:12px">
+          <button class="btn" id="addGift">+ เพิ่มของขวัญ</button>
+          <button class="btn warn" id="saveGifts">บันทึก</button><span class="saved" id="giftsSaved">บันทึกแล้ว ✓</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ตั้งค่า -->
+    <section class="page" id="page-stage">
+      <h1>ตั้งค่าหน้าไลฟ์ <span class="badge" id="stageTheme"></span></h1>
+      <p class="lead">ข้อความและค่าในกล่องแรกเป็นของธีมที่ใช้อยู่ ส่วนกล่องล่างใช้ร่วมกันทุกธีม</p>
+      <div class="card">
+        <h2>ข้อความของธีมนี้</h2>
+        <div class="grid2">
+          <div class="field"><label>ชื่อไลฟ์ (หัวจอ)</label><input type="text" id="title" /></div>
+          <div class="field"><label>คำโปรย</label><input type="text" id="subtitle" /></div>
+          <div class="field"><label id="cmdLabel">คำสั่งในคอมเมนต์ (เว้นว่าง = ปิด)</label><input type="text" id="requestCommand" /></div>
+          <div></div>
+          <div class="field" data-field="host"><label>ชื่อพิธีกรบนเวที (ป้ายใต้แผงของขวัญ)</label><input type="text" id="host" maxlength="40" /></div>
+          <div class="field" data-field="nowPlaying"><label>เพลงที่กำลังเล่น (จอ LED)</label><input type="text" id="nowPlaying" /></div>
+          <div class="field" data-field="artist"><label>ชื่อศิลปิน</label><input type="text" id="artist" /></div>
+          <div class="field" data-field="bpm"><label>จังหวะเพลง BPM (ไฟและคนดูเต้นตาม)</label><input type="number" id="bpm" min="40" max="200" /></div>
+          <div class="field" data-field="showPerformer"><label>&nbsp;</label><label class="check"><input type="checkbox" id="showPerformer" /> แสดงนักร้องเงาบนเวที</label></div>
+        </div>
+        <button class="btn sm" id="resetTheme">คืนค่าเริ่มต้นของธีมนี้</button>
+      </div>
+      <div class="card">
+        <h2>ใช้ร่วมกันทุกธีม</h2>
+        <div class="grid2">
+          <div class="field"><label>คนในฉากสูงสุด</label><input type="number" id="maxAudience" min="5" max="80" /></div>
+          <div class="field"><label>คนเงียบนานกี่นาทีถึงออกจากฉาก</label><input type="number" id="idleMinutes" min="1" max="120" /></div>
+          <div class="field"><label>แต้มเต็มหลอดพลัง (ไลก์ = 1, เพชร 1 = 5)</label><input type="number" id="hypeGoal" min="100" /></div>
+          <div class="field"><label>ความพลุกพล่าน (คนเดินไปมาในฉาก ไหว้ศาล / ลอยกระทง)</label>
+            <select id="bustle"><option value="0">ปิด</option><option value="1">น้อย</option><option value="2">ปานกลาง</option><option value="3">เยอะ</option></select>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" id="sound" /> เสียงเอฟเฟกต์</label>
+      </div>
+      <div class="card" id="ttsCard">
+        <h2>🔊 เสียงพูดอัตโนมัติ</h2>
+        <p class="muted" style="margin-top:0">อ่านชื่อคนส่งของขวัญ ทักทาย อ่านคอมเมนต์ — เสียงธรรมชาติใช้เสียงอ่านของ Microsoft Edge (ฟรี) ถ้าใช้ไม่ได้ระบบจะสลับไปใช้เสียงของเครื่องให้เอง</p>
+        <div class="grid2">
+          <div>
+            <div class="field"><label>ระบบเสียง</label>
+              <select id="ttsEngine"><option value="edge">✨ เสียงธรรมชาติ (Microsoft Edge ฟรี)</option><option value="browser">เสียงของเครื่อง (แบบเดิม)</option></select></div>
+            <div class="field"><label>เสียง</label><select id="ttsVoice"></select></div>
+            <div class="field"><label>ความเร็ว <b id="ttsRateV"></b></label><input type="range" id="ttsRate" min="0.7" max="1.5" step="0.05" style="width:100%" /></div>
+            <div class="field"><label>ระดับเสียงสูง-ต่ำ <b id="ttsPitchV"></b></label><input type="range" id="ttsPitch" min="-20" max="20" step="1" style="width:100%" /></div>
+            <div class="field"><label>ความดัง <b id="ttsVolV"></b></label><input type="range" id="ttsVol" min="0" max="1" step="0.05" style="width:100%" /></div>
+          </div>
+          <div>
+            <label style="margin-bottom:6px">อ่านอะไรบ้าง</label>
+            <label class="check"><input type="checkbox" id="ttsGifts" /> ขอบคุณคนส่งของขวัญ</label>
+            <div class="field" style="margin:2px 0 8px 26px;max-width:240px"><label>อ่านเฉพาะของขวัญตั้งแต่ (เพชร)</label><input type="number" id="ttsMin" min="0" /></div>
+            <label class="check"><input type="checkbox" id="ttsFollows" /> ขอบคุณคนกดติดตาม</label>
+            <label class="check"><input type="checkbox" id="ttsWins" /> ประกาศคนชนะเกม (ควิซ/ทายเลข)</label>
+            <label class="check"><input type="checkbox" id="ttsWelcome" /> ทักคนที่กลับมาดูอีกครั้ง</label>
+            <label class="check"><input type="checkbox" id="ttsJoins" /> ทักทายคนเข้ามาใหม่ <span class="muted">(ไลฟ์คนเยอะจะพูดถี่)</span></label>
+            <label class="check"><input type="checkbox" id="ttsComments" /> อ่านคอมเมนต์</label>
+          </div>
+        </div>
+        <div class="field"><label>ชื่อของขวัญภาษาไทย (เพิ่ม/แก้เอง บรรทัดละ 1 ชิ้น: <code>ชื่ออังกฤษ = ชื่อไทย | ลักษณนาม</code>) — มีชื่อพื้นฐานให้แล้ว เช่น Rose = กุหลาบ | ดอก</label>
+          <textarea id="ttsGiftNames" rows="3" placeholder="Rose = กุหลาบแดง | ดอก&#10;Galaxy = กาแล็กซี่ | อัน"></textarea></div>
+        <div class="field"><label>ข้อความทดสอบ</label><input type="text" id="ttsTestText" value="ขอบคุณน้องเมย์ที่ส่งกุหลาบห้าดอกมานะครับ" /></div>
+        <div class="row">
+          <button class="btn warn" id="ttsSave">บันทึกเสียงพูด</button>
+          <button class="btn" id="ttsHere">🔊 ฟังตัวอย่างที่นี่</button>
+          <button class="btn" id="ttsStage">📢 ให้หน้าเวทีพูด</button>
+          <span class="saved" id="ttsSaved">บันทึกแล้ว ✓</span>
+          <span class="muted" id="ttsStatus"></span>
+        </div>
+      </div>
+      <div class="card" id="safeAreaCard">
+        <h2>📱 เผื่อขอบมือถือคนดู</h2>
+        <p class="muted" style="margin-top:0">มือถือคนดูส่วนใหญ่จอยาวกว่าภาพไลฟ์ TikTok จะตัดขอบซ้าย/ขวาทิ้ง และแถบบนของแอปทับหัวจอ —
+          เปิดอันนี้แล้วกล่องข้อความทั้งหมด (ชื่อไลฟ์ ของขวัญ Top 5 เกม) จะย่อเข้ามาอยู่ตรงกลาง ส่วนฉากกับคนในฉากยังเต็มจอเหมือนเดิม</p>
+        <div class="grid2">
+          <div>
+            <label class="check"><input type="checkbox" id="safeOn" /> <b>เปิดโหมดเผื่อขอบมือถือ</b> <span class="muted">(แนะนำตอนไลฟ์)</span></label>
+          </div>
+          <div class="field"><label>ระยะเผื่อ</label>
+            <select id="safeLevel">
+              <option value="low">น้อย — กล่องใหญ่ เผื่อมือถือจอปกติ</option>
+              <option value="mid">พอดี (แนะนำ) — มือถือจอยาวทั่วไป</option>
+              <option value="high">มาก — มือถือจอยาวพิเศษ / มีปุ่มบังเยอะ</option>
+            </select></div>
+        </div>
+        <div class="row">
+          <button class="btn warn" id="safeSave">บันทึก</button>
+          <a class="btn" id="safeGuideLink" href="/stage.html?guide&silent" target="_blank">👁 ดูหน้าเวทีพร้อมกรอบมือถือ</a>
+          <span class="saved" id="safeSaved">บันทึกแล้ว ✓</span>
+        </div>
+        <p class="muted" style="margin:8px 0 0">ลิงก์ "ดูพร้อมกรอบ" ใช้ตรวจตอนจัดฉากเท่านั้น — ลิงก์ที่ใส่ใน LIVE Studio ให้ใช้ลิงก์หน้าเวทีปกติ (ไม่มีกรอบ)</p>
+      </div>
+      <div class="card" id="musicCard">
+        <h2>🎵 ดนตรีพื้นหลัง</h2>
+        <p class="muted" style="margin-top:0">ดนตรีคลอเบา ๆ ที่หน้าเวทีแต่งสดเองตามธีม ทำนองไม่ซ้ำเดิม — <b>ไม่ใช่เพลงของใคร ไม่ติดลิขสิทธิ์</b> และจะเบาลงเองตอนเสียงพูดอัตโนมัติพูด</p>
+        <div class="grid2">
+          <div>
+            <label class="check"><input type="checkbox" id="musicOn" /> เปิดดนตรีพื้นหลัง</label>
+            <div class="field"><label>ความดัง <b id="musicVolV"></b></label><input type="range" id="musicVol" min="0" max="1" step="0.05" style="width:100%" /></div>
+            <label class="check"><input type="checkbox" id="musicDuck" /> เบาลงตอนเสียงพูดอัตโนมัติพูด</label>
+          </div>
+          <div>
+            <div class="field"><label>สไตล์เพลง</label><select id="musicStyle"></select></div>
+            <p class="muted" style="margin:4px 0 0">ถ้าเปิดเพลงจากที่อื่นเองอยู่แล้ว (เช่น คลังเพลงของ TikTok) ให้ปิดอันนี้ เสียงจะได้ไม่ตีกัน</p>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn warn" id="musicSave">บันทึกดนตรี</button>
+          <button class="btn" id="musicHere">▶ ฟังตัวอย่างที่นี่</button>
+          <span class="saved" id="musicSaved">บันทึกแล้ว ✓</span>
+        </div>
+      </div>
+      <div class="card" id="hintsCard">
+        <h2>📝 ข้อความแนะนำคำสั่ง (กล่องซ้ายบนจอ)</h2>
+        <p class="muted" style="margin-top:0">ข้อความพวกนี้จะหมุนโชว์ทีละอันใต้กล่องคำขอบนหน้าเวที เลือกได้ว่าจะให้โชว์อันไหนบ้าง หรือพิมพ์ข้อความของตัวเองเพิ่ม</p>
+        <div class="grid2">
+          <div>
+            <label class="check"><input type="checkbox" id="hRequest" /> <span id="hRequestLbl">คำสั่งขอ</span></label>
+            <label class="check" id="hThemeRow"><input type="checkbox" id="hTheme" /> <span id="hThemeLbl">คำสั่งของธีม</span></label>
+            <label class="check"><input type="checkbox" id="hFortune" /> <span id="hFortuneLbl">เซียมซี</span></label>
+            <label class="check"><input type="checkbox" id="hLevel" /> <span id="hLevelLbl">เลเวล</span></label>
+            <label class="check"><input type="checkbox" id="hTeam" /> เข้าทีม <span class="muted">(โชว์เฉพาะตอนแข่งทีม)</span></label>
+            <label class="check"><input type="checkbox" id="hGame" /> การ์ดเกม <span class="muted">(โชว์เฉพาะตอนมีโพล/ควิซ/ทายเลข)</span></label>
+            <div class="field" style="max-width:240px;margin-top:10px"><label>เปลี่ยนข้อความทุกกี่วินาที</label><input type="number" id="hSec" min="2" max="30" /></div>
+          </div>
+          <div>
+            <div class="field"><label>ข้อความเพิ่มเอง (บรรทัดละ 1 ข้อความ สูงสุด 10)</label>
+              <textarea id="hCustom" rows="4" placeholder="เช่น&#10;กดติดตามไว้ไม่พลาดไลฟ์ 💖&#10;ไลฟ์ทุกวัน 2 ทุ่ม"></textarea></div>
+            <div class="hint-preview"><b>บนจอจะหมุนข้อความนี้:</b><ol id="hPreview"></ol></div>
+          </div>
+        </div>
+        <button class="btn warn" id="hSave">บันทึกข้อความแนะนำ</button><span class="saved" id="hSaved">บันทึกแล้ว ✓</span>
+      </div>
+      <button class="btn warn" id="saveStage">บันทึก</button><span class="saved" id="stageSaved">บันทึกแล้ว ✓</span>
+    </section>
+
+    <!-- คำขอ -->
+    <section class="page" id="page-songs">
+      <h1 id="queueTitle">คิวขอเพลง</h1>
+      <p class="lead">คนดูพิมพ์ <code id="cmdHint">ขอเพลง ...</code> ในคอมเมนต์ แล้วจะขึ้นจอ <span id="queueLead"></span></p>
+      <div class="card"><div id="songList"></div></div>
+      <button class="btn danger" id="clearSongs">ล้างทั้งหมด</button>
+    </section>
+
+    <!-- เพลงในไลฟ์ (public/music-admin.js) -->
+    <section class="page" id="page-music">
+      <h1>เพลงในไลฟ์</h1>
+      <div class="m-cr">
+        <div class="ic">©<small>!</small></div>
+        <div><h3>เพลงที่มีลิขสิทธิ์ = เสี่ยงโดนแบน</h3>
+          <ul><li>TikTok ตรวจเพลงในไลฟ์อัตโนมัติ — ปิดเสียง ตัดไลฟ์ หรือ<b>แบนบัญชี</b>ได้</li><li>รวมเพลงดังจาก YouTube / Spotify / เพลงที่ดาวน์โหลดมา</li><li>ใช้ได้: เพลงที่คุณแต่งเอง • เพลงที่ซื้อสิทธิ์ • เพลงฟรีลิขสิทธิ์ (Royalty-free)</li></ul></div>
+      </div>
+      <label class="m-ack" id="mAckRow"><input type="checkbox" id="mAck" /> ฉันเข้าใจ และจะใช้เฉพาะเพลงที่มีสิทธิ์ใช้ <span class="muted" id="mAckNote">ติ๊กครั้งเดียว ถึงจะเพิ่มเพลงได้</span></label>
+      <p class="lead">เปิดเพลงจากไฟล์ในเครื่องเข้าไลฟ์ เล่นตามลำดับในรายการ — เสียงออกทางหน้าเวทีเหมือนเสียงเอฟเฟกต์ เข้าไลฟ์เองไม่ต้องตั้งค่าเพิ่ม (แยกจาก “ดนตรีพื้นหลัง” ที่โปรแกรมแต่งเอง)</p>
+      <div class="card">
+        <div class="m-now">
+          <div class="m-cover">🎵</div>
+          <div class="m-mid">
+            <div class="muted m-sub"><span class="m-eq" id="mEq" hidden><i></i><i></i><i></i><i></i></span><span id="mSub">-</span></div>
+            <div class="m-title" id="mTitle">-</div>
+            <input type="range" id="mSeek" min="0" max="1000" value="0" aria-label="ตำแหน่งเพลง" />
+            <div class="m-time"><span id="mPos">0:00</span><span id="mDur">0:00</span></div>
+          </div>
+          <div class="m-ctrl">
+            <button class="m-c" id="mPrev" title="เพลงก่อนหน้า">⏮</button><button class="m-c big" id="mPlay" title="เล่น / หยุดชั่วคราว">▶</button><button class="m-c" id="mNext" title="เพลงถัดไป">⏭</button><button class="m-c" id="mStop" title="หยุด">⏹</button>
+          </div>
+        </div>
+        <div class="m-warn" id="mWarn" hidden></div>
+        <div class="m-vol"><span>🔊 เสียงเพลงในไลฟ์</span><input type="range" id="mVol" min="0" max="100" /><b id="mVolV"></b></div>
+        <div class="m-vol"><span class="muted">🗣️ ตอนเสียงพูดอัตโนมัติพูด ลดเหลือ</span><input type="range" id="mDuck" min="0" max="100" /><b id="mDuckV"></b></div>
+      </div>
+      <div class="card">
+        <div class="m-drop" id="mDrop">
+          <div style="font-size:30px">📁</div>
+          <button class="btn primary" id="mPick">+ เพิ่มไฟล์จากเครื่อง</button>
+          <div class="muted" style="margin-top:6px">หรือลากไฟล์มาวางตรงนี้ (เลือกหลายไฟล์ได้) • mp3 · mp4 · m4a · wav · ogg — mp4 เล่นเฉพาะเสียง • ไฟล์ละไม่เกิน 600 MB</div>
+          <input type="file" id="mFile" multiple accept=".mp3,.mp4,.m4a,.m4v,.wav,.ogg,.oga,.aac,.flac,.webm,audio/*,video/mp4" hidden />
+          <div class="m-upmsg" id="mUpMsg"></div>
+        </div>
+        <div class="row" style="justify-content:space-between;margin:14px 0 6px"><b>รายการเพลง</b><span class="muted" id="mCount"></span></div>
+        <div id="mList" class="m-list"></div>
+        <p class="muted" style="margin:6px 0 0;font-size:13px">ลาก ⠿ เพื่อสลับลำดับ • กด “ฟังในเครื่อง” เพื่อทดสอบ · กด “เล่นเข้าไลฟ์” เพื่อส่งเพลงไปหน้าเวที • ✎ เปลี่ยนชื่อที่ขึ้นบนหน้าเวที • โปรแกรมเก็บสำเนาไฟล์ไว้เอง ย้าย/ลบไฟล์ต้นฉบับได้</p>
+      </div>
+      <div class="card">
+        <h2>ตัวเลือก</h2>
+        <div class="grid2">
+          <div class="field"><label>จบรายการแล้ว</label><select id="mLoop"><option value="loop">วนเล่นซ้ำทั้งรายการ</option><option value="stop">หยุด</option></select></div>
+          <div class="field"><label>เฟดเสียงตอนเปลี่ยนเพลง</label><select id="mFade"><option value="0">ไม่เฟด</option><option value="2">2 วินาที</option><option value="5">5 วินาที</option></select></div>
+        </div>
+        <label class="check"><input type="checkbox" id="mShuffle" /> สุ่มลำดับเพลง</label>
+        <label class="check"><input type="checkbox" id="mStopBg" /> พัก “ดนตรีพื้นหลัง” ตอนเพลงในไลฟ์เล่น (เสียงไม่ตีกัน)</label>
+        <label class="check"><input type="checkbox" id="mShow" /> ขึ้นชื่อเพลงบนหน้าเวที (ป้าย 🎵 กำลังเล่น)</label>
+        <label class="check"><input type="checkbox" id="mAuto" /> เริ่มเล่นเองตอนเชื่อมต่อไลฟ์</label>
+        <div class="m-copy">⚠️ <b>เรื่องลิขสิทธิ์:</b> TikTok อาจปิดเสียงหรือตัดไลฟ์ ถ้าเปิดเพลงที่มีลิขสิทธิ์ — ใช้เพลงที่คุณมีสิทธิ์ใช้ หรือเพลงฟรีลิขสิทธิ์</div>
+      </div>
+    </section>
+
+    <!-- เกม -->
+    <section class="page" id="page-games">
+      <h1>เกมคอมเมนต์</h1>
+      <p class="lead">คนดูเล่นได้ฟรีแค่พิมพ์คอมเมนต์ ไม่ต้องส่งของขวัญ ใช้ได้ทุกธีม — แบ่งทีมเล่นพร้อมการ์ดเกมได้ (การ์ดเกมเล่นได้ทีละอย่าง: โพล / ควิซ / พิมพ์ไว / ทายเลข)</p>
+
+      <div class="card" id="autoCard">
+        <h2>🤖 เกมอัตโนมัติ <span class="badge" id="autoBadge">ปิด</span></h2>
+        <p class="muted" style="margin-top:0">ระบบสุ่มเกมให้เองตามช่วงเวลา ใช้คำถามที่เข้ากับธีมที่ใช้อยู่ ผ่านตัวกรองคำต้องห้ามทุกข้อ — เล่นฟรี รางวัลคือสปอตไลต์ + XP เท่านั้น
+          • เตือนบนจอล่วงหน้า 10 วิ • ห่างกันอย่างน้อย 2 นาที • ทำงานเฉพาะตอนเชื่อมต่อไลฟ์</p>
+        <div class="auto-status" id="autoStatus">-</div>
+        <div class="grid2">
+          <div>
+            <label class="check"><input type="checkbox" id="autoOn" /> <b>เปิดเกมอัตโนมัติ</b></label>
+            <div class="grid2" style="gap:8px;margin-top:6px">
+              <div class="field"><label>สุ่มทุก ๆ (นาที) ตั้งแต่</label><input type="number" id="autoMin" min="2" max="30" /></div>
+              <div class="field"><label>ถึง (นาที)</label><input type="number" id="autoMax" min="2" max="60" /></div>
+            </div>
+            <label class="check"><input type="checkbox" id="autoQuiet" /> คอมเมนต์เงียบนาน → เริ่มเกมเร็วขึ้น</label>
+            <div class="field" style="margin:4px 0 0 26px;max-width:220px"><label>เงียบนานกี่วินาที</label><input type="number" id="autoQuietSec" min="30" max="600" /></div>
+          </div>
+          <div>
+            <label style="margin-bottom:6px">สุ่มเกมอะไรบ้าง</label>
+            <label class="check"><input type="checkbox" id="autoQuiz" /> ❓ ควิซ <span class="muted" id="cntQuiz"></span></label>
+            <label class="check"><input type="checkbox" id="autoType" /> ⚡ ใครพิมพ์ไวสุดชนะ <span class="muted" id="cntType"></span></label>
+            <label class="check"><input type="checkbox" id="autoPoll" /> 📊 โหวต <span class="muted" id="cntPoll"></span></label>
+            <label class="check"><input type="checkbox" id="autoGuess" /> 🔢 ทายเลข <span class="muted" id="cntGuess"></span></label>
+            <p class="muted" id="autoNoNum" style="margin:4px 0 0;display:none">🛡️ ธีมนี้/โหมดปลอดภัยปิดเกมตัวเลขไว้ (กันดูเหมือนขอเลขนำโชค)</p>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn warn" id="autoSave">บันทึก</button>
+          <button class="btn primary" id="autoNow">▶ เริ่มเกมถัดไปเลย</button>
+          <button class="btn" id="autoSkip">⏭ สุ่มเกมใหม่</button>
+          <span class="saved" id="autoSaved">บันทึกแล้ว ✓</span>
+          <span class="muted" id="autoMsg"></span>
+        </div>
+        <details style="margin-top:12px">
+          <summary><b>✍️ เพิ่มคำถามเองสำหรับธีม <span id="bankTheme"></span></b> <span class="muted">(สุ่มรวมกับคำถามในระบบ)</span></summary>
+          <div class="grid2" style="margin-top:10px">
+            <div class="field"><label>❓ ควิซ — บรรทัดละข้อ: <code>คำถาม = คำตอบ / คำตอบอื่น</code></label>
+              <textarea id="bankQuiz" rows="4" placeholder="แมวมีกี่ขา = 4 / สี่&#10;สีของท้องฟ้าตอนกลางวัน = ฟ้า / สีฟ้า"></textarea></div>
+            <div class="field"><label>📊 โหวต — บรรทัดละข้อ: <code>คำถาม = ตัวเลือก1 / ตัวเลือก2 / ...</code> (2-4 ตัวเลือก)</label>
+              <textarea id="bankPoll" rows="4" placeholder="ชอบหมาหรือแมว = หมา / แมว / ทั้งคู่"></textarea></div>
+          </div>
+          <div class="field"><label>⚡ พิมพ์ไว — บรรทัดละข้อความ (ไม่เกิน 40 ตัวอักษร)</label>
+            <textarea id="bankType" rows="3" placeholder="ขอบคุณทุกคนที่มาดูไลฟ์&#10;กดติดตามไว้ไม่พลาด"></textarea></div>
+          <p class="muted" style="margin:0">🛡️ ข้อที่มีคำต้องห้าม (หวย เลขเด็ด ลิงก์ เบอร์โทร คำหยาบ ฯลฯ) จะไม่ถูกบันทึก</p>
+        </details>
+      </div>
+
+      <div class="card">
+        <h2>⚔️ แบ่งทีมแข่ง <span class="badge" id="teamStatus">ยังไม่เริ่ม</span></h2>
+        <p class="muted" style="margin-top:0">คนดูพิมพ์ชื่อทีมเพื่อเข้าทีม (เปลี่ยนทีมไม่ได้) • คอมเมนต์ +1 • ไลก์ +1 ต่อไลก์ • ของขวัญ เพชร×10 • ติดตาม +20 — ทีมไหนแต้มมากกว่าชนะ</p>
+        <div class="grid2" style="grid-template-columns:1fr 1fr 140px">
+          <div class="field"><label>ชื่อทีมซ้าย 🔴</label><input type="text" id="teamA" value="แดง" /></div>
+          <div class="field"><label>ชื่อทีมขวา 🔵</label><input type="text" id="teamB" value="ฟ้า" /></div>
+          <div class="field"><label>เวลา (นาที, 0 = ไม่จำกัด)</label><input type="number" id="teamMin" value="3" min="0" /></div>
+        </div>
+        <div class="row">
+          <button class="btn primary" id="teamStart">▶ เริ่มแข่ง</button>
+          <button class="btn warn" id="teamEnd">🏁 จบตอนนี้</button>
+          <button class="btn" id="teamClear">ซ่อนจากจอ</button>
+          <span class="muted" id="teamScore"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🎯 การ์ดเกม <span class="badge" id="cardStatus">ว่าง</span></h2>
+        <div class="row" style="margin-bottom:12px">
+          <button class="btn warn" id="cardEnd">🏁 ปิด/เฉลยตอนนี้</button>
+          <button class="btn" id="cardClear">ซ่อนจากจอ</button>
+          <span class="muted" id="cardInfo"></span>
+        </div>
+        <div class="grid2">
+          <div>
+            <h2>📊 โพลโหวต</h2>
+            <div class="field"><label>คำถาม</label><input type="text" id="pollQ" placeholder="เช่น เพลงต่อไปเอาอะไรดี?" /></div>
+            <div class="field"><label>ตัวเลือก (คนดูพิมพ์ 1-4)</label>
+              <input type="text" class="pollOpt" placeholder="ตัวเลือก 1" style="margin-bottom:6px" />
+              <input type="text" class="pollOpt" placeholder="ตัวเลือก 2" style="margin-bottom:6px" />
+              <input type="text" class="pollOpt" placeholder="ตัวเลือก 3 (ไม่บังคับ)" style="margin-bottom:6px" />
+              <input type="text" class="pollOpt" placeholder="ตัวเลือก 4 (ไม่บังคับ)" />
+            </div>
+            <div class="field"><label>เวลา (วินาที, 0 = จนกว่าจะปิด)</label><input type="number" id="pollSec" value="60" min="0" /></div>
+            <button class="btn primary" id="pollStart">▶ เริ่มโพล</button>
+          </div>
+          <div>
+            <h2>❓ ควิซ</h2>
+            <div class="field"><label>คำถาม</label><input type="text" id="quizQ" placeholder="เช่น เมืองหลวงของไทยชื่ออะไร" /></div>
+            <div class="field"><label>คำตอบ (หลายคำตอบคั่นด้วย | )</label><input type="text" id="quizA" placeholder="กรุงเทพ|กทม|bangkok" /></div>
+            <div class="field"><label>เวลา (วินาที, 0 = ไม่จำกัด)</label><input type="number" id="quizSec" value="60" min="0" /></div>
+            <button class="btn primary" id="quizStart">▶ เริ่มควิซ</button>
+            <h2 style="margin-top:18px">⚡ ใครพิมพ์ไวสุดชนะ</h2>
+            <div class="field"><label>ข้อความให้พิมพ์ (คนแรกที่พิมพ์ตรงชนะ)</label><input type="text" id="typeP" maxlength="40" placeholder="เช่น ขอบคุณทุกคนที่มาดูไลฟ์" /></div>
+            <div class="field"><label>เวลา (วินาที)</label><input type="number" id="typeSec" value="30" min="0" /></div>
+            <button class="btn primary" id="typeStart">▶ เริ่มพิมพ์ไว</button>
+            <h2 style="margin-top:18px">🔢 ทายเลข</h2>
+            <div class="grid2" style="gap:8px">
+              <div class="field"><label>ตั้งแต่</label><input type="number" id="guessMin" value="1" /></div>
+              <div class="field"><label>ถึง</label><input type="number" id="guessMax" value="100" /></div>
+            </div>
+            <div class="field"><label>เวลา (วินาที, 0 = ไม่จำกัด)</label><input type="number" id="guessSec" value="0" min="0" /></div>
+            <button class="btn primary" id="guessStart">▶ เริ่มทายเลข</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h2>🎋 เซียมซี & 🏅 เลเวลแฟน</h2>
+          <label class="check"><input type="checkbox" id="gFortune" /> เปิดเซียมซี (คนละ 1 ครั้งต่อนาที)</label>
+          <div class="field" style="margin:6px 0 10px 26px"><label>คำสั่ง</label><input type="text" id="gFortuneCmd" style="max-width:200px" /></div>
+          <label class="check"><input type="checkbox" id="gLevels" /> เลเวลแฟน (ป้าย Lv. บนชื่อ + พิมพ์ "เลเวล" ดูของตัวเอง)</label>
+          <label class="check"><input type="checkbox" id="gWelcome" /> ทักคนที่กลับมาดูอีกครั้ง "ยินดีต้อนรับกลับ"</label>
+          <div class="row" style="margin-top:10px"><button class="btn warn" id="gSave">บันทึก</button><span class="saved" id="gSaved">บันทึกแล้ว ✓</span></div>
+        </div>
+        <div class="card">
+          <h2>🏅 แฟนประจำ (เลเวลสูงสุด)</h2>
+          <div id="topFans" class="muted">-</div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn sm" id="fansRefresh">รีเฟรช</button>
+            <button class="btn sm danger" id="fansReset">ล้างเลเวลทั้งหมด</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🧪 ทดสอบเกม</h2>
+        <div class="row">
+          <button class="btn" id="simPlay">🎲 จำลองคนดูเล่นเกมที่เปิดอยู่</button>
+          <button class="btn" id="simFortune">🎋 จำลองคนเสี่ยงเซียมซี</button>
+          <button class="btn" id="simLevel">🏅 จำลองคนพิมพ์ "เลเวล"</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ความปลอดภัย -->
+    <section class="page" id="page-safety">
+      <h1>ความปลอดภัย</h1>
+      <p class="lead">กันข้อความเสี่ยงจากคนดูไม่ให้ขึ้นหน้าเวทีหรือถูกอ่านออกเสียง — กฎ TikTok ถือว่าคนไลฟ์ต้องรับผิดชอบสิ่งที่เครื่องมือเสริมแสดงบนจอ</p>
+
+      <div class="card safe-card" id="safeCard">
+        <label class="check big-switch"><input type="checkbox" id="sfSafe" /> <span>🟢 โหมดปลอดภัย</span> <span class="badge" id="sfSafeBadge">ปิดอยู่</span></label>
+        <ul class="muted" style="margin:8px 0 0;padding-left:20px;line-height:1.8">
+          <li>ปิดตัวเลขทั้งหมด (เลขมงคล / เลขนำโชค / เลขในอั่งเปา) → เปลี่ยนเป็นคำอวยพร</li>
+          <li>ไม่อ่านคอมเมนต์ออกเสียง แม้จะเปิดไว้ในตั้งค่าเสียง</li>
+          <li>บังคับเปิดตัวกรองคำต้องห้าม</li>
+        </ul>
+        <p class="muted" style="margin:8px 0 0">แนะนำให้เปิดไว้ทุกครั้งที่ไลฟ์จริง</p>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h2>🛡️ ตัวกรองคำต้องห้าม</h2>
+          <label class="check"><input type="checkbox" id="sfFilter" /> เปิดตัวกรอง (คอมเมนต์ ชื่อคนดู คำขอ เสียงพูด)</label>
+          <div class="field" style="margin:8px 0 10px"><label>เจอข้อความต้องห้ามแล้ว</label>
+            <select id="sfMode"><option value="hide">ซ่อนทั้งข้อความ (ปลอดภัยสุด)</option><option value="mask">ขึ้นจอได้ แต่เปลี่ยนส่วนที่ผิดเป็น ***</option></select></div>
+          <label class="check"><input type="checkbox" id="sfLinks" /> ลิงก์เว็บ (.com .net ดอทคอม ฯลฯ)</label>
+          <label class="check"><input type="checkbox" id="sfPhones" /> เบอร์โทร / เลขบัญชี</label>
+          <label class="check"><input type="checkbox" id="sfContacts" /> ไอดี LINE / IG / Facebook / Telegram</label>
+          <div id="sfCats" style="margin-top:10px"></div>
+          <div class="field"><label>คำที่อยากกรองเพิ่มเอง (คั่นด้วย , หรือขึ้นบรรทัดใหม่)</label><textarea id="sfCustom" rows="2" placeholder="เช่น ชื่อร้านคู่แข่ง, คำที่ไม่อยากให้ขึ้นจอ"></textarea></div>
+          <div class="field"><label>คำที่อนุญาต (กันกรองผิด เช่น สัดส่วน)</label><textarea id="sfAllow" rows="2"></textarea></div>
+          <div class="row">
+            <button class="btn warn" id="sfSave">บันทึก</button>
+            <button class="btn sm" id="sfReset">ใช้รายการคำเริ่มต้น</button>
+            <span class="saved" id="sfSaved">บันทึกแล้ว ✓</span>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <h2>🧪 ทดสอบตัวกรอง</h2>
+            <div class="row" style="flex-wrap:nowrap"><input type="text" id="sfTest" placeholder="พิมพ์ข้อความลองดู เช่น เว็บตรง ufabet.com" /><button class="btn" id="sfTestBtn" style="white-space:nowrap">ตรวจ</button></div>
+            <div id="sfTestOut" class="muted" style="margin-top:8px"></div>
+          </div>
+          <div class="card">
+            <h2>💬 คอมเมนต์ล่าสุด <span class="muted">(ซ่อน/บล็อกได้ทันที)</span></h2>
+            <div id="sfRecent" class="mod-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h2>🙈 ข้อความที่ถูกกรอง</h2>
+          <div id="sfFiltered" class="mod-list"></div>
+        </div>
+        <div class="card">
+          <h2>🚫 รายชื่อที่บล็อก</h2>
+          <p class="muted" style="margin-top:0">คนที่บล็อก: ไม่มีตัวละคร ข้อความไม่ขึ้นจอ ชื่อแสดงเป็น "ผู้ชม" (ส่งของขวัญยังนับปกติ)</p>
+          <div id="sfBlocked" class="mod-list"></div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h2>✅ เช็กก่อนไลฟ์ <span class="badge" id="ckBadge">0/0</span></h2>
+          <div id="ckList"></div>
+          <button class="btn sm" id="ckClear" style="margin-top:8px">ล้างเครื่องหมาย</button>
+        </div>
+        <div class="card">
+          <h2>🎙️ ตัวเตือนไลฟ์เงียบ</h2>
+          <p class="muted" style="margin-top:0">TikTok ตัดไลฟ์ที่ "ไม่มีคนดูแล" — หลังบ้านจะฟังไมค์ ถ้าเงียบนานจะเตือนให้คุยกับคนดู (เตือนเฉพาะในหลังบ้าน ไม่ขึ้นไลฟ์)</p>
+          <label class="check"><input type="checkbox" id="snOn" /> เปิดตัวเตือน (ต้องเปิดหน้านี้ค้างไว้ระหว่างไลฟ์)</label>
+          <div class="grid2" style="gap:10px;margin-top:8px">
+            <div class="field"><label>เตือนเมื่อเงียบเกิน (นาที)</label><input type="number" id="snMin" min="1" max="30" value="3" /></div>
+            <div class="field"><label>ความไวไมค์ <b id="snSensV"></b></label><input type="range" id="snSens" min="1" max="30" value="8" style="width:100%" /></div>
+          </div>
+          <div class="mic-meter"><i id="snLevel"></i><b id="snThr"></b></div>
+          <div class="muted" id="snStatus" style="margin-top:6px">ปิดอยู่</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ทดสอบ -->
+    <section class="page" id="page-avatar">
+      <h1>ตัวละคร 3D</h1>
+      <p class="lead">ตัวละครยืนบนเวที ขยับตัว กะพริบตา ทักคนเข้าไลฟ์ ขอบคุณของขวัญด้วยท่าทาง และปากขยับตามเสียงพูด</p>
+
+      <div class="card">
+        <h2>👗 ตัวละครของธีม <span id="avThemeName"></span></h2>
+        <div class="field" style="max-width:520px"><label>รูปแบบตัวละคร</label>
+          <select id="avStyle">
+            <option value="2d">2D ลายเส้น — วาดสไตล์เดียวกับฉาก แต่งตัว/หน้าตาตามธีม</option>
+            <option value="3d">3D (VRM) — โมเดลอนิเมะสามมิติ</option>
+          </select></div>
+        <div class="row" style="flex-wrap:wrap;gap:8px">
+          <select id="avModelSel" style="min-width:260px"></select>
+          <button class="btn" id="avPreview">👁 ดูตัวอย่างในแท็บใหม่</button>
+        </div>
+        <label class="check" style="margin-top:10px"><input type="checkbox" id="avOutfit" /> <b>แต่งตัวตามธีม</b> — ชุด พร็อพ และบุคลิก: <span class="muted" id="avOutfitLabel"></span></label>
+        <div class="field" style="max-width:420px;margin-top:6px"><label>มุมกล้อง</label>
+          <select id="avFraming">
+            <option value="full">เต็มตัว — เห็นทั้งตัว เดินไปมาในฉาก</option>
+            <option value="half">ครึ่งตัว — หน้าใหญ่ คมชัดบนมือถือ (แบบ VTuber)</option>
+          </select></div>
+        <div class="field" style="max-width:420px"><label>เส้นขอบตัวละคร (ตัดเส้นแบบการ์ตูน)</label>
+          <select id="avOutline">
+            <option value="0">ไม่มีเส้นขอบ</option>
+            <option value="1">บาง</option>
+            <option value="2">กลาง (แนะนำ)</option>
+            <option value="3">หนา — เด่นชัดบนมือถือ</option>
+          </select></div>
+        <div class="field" style="max-width:420px"><label>ขอบเนียน (Anti-aliasing)</label>
+          <select id="avAA">
+            <option value="8x">8x MSAA — เนียนที่สุด (แนะนำ ถ้าเครื่องมีการ์ดจอ)</option>
+            <option value="4x">4x MSAA + วาดละเอียดเกินจอ</option>
+            <option value="lite">ประหยัดเครื่อง — สำหรับคอมสเปกต่ำ/มือถือ</option>
+          </select></div>
+        <label class="check"><input type="checkbox" id="avFront" /> ให้ตัวละครอยู่<b>ด้านหน้า</b>กล่องข้อความ (ไม่โดนกล่องบัง แต่จะบังกล่องแทน)</label>
+        <p class="muted" style="margin:8px 0 0">ตัวละครที่ติดมาเป็นของ VRoid Project / pixiv — ใช้ได้ทุกคน รวมถึงเชิงพาณิชย์ ไม่ต้องให้เครดิต (รายละเอียด: <code>public/avatar/LICENSES.txt</code>)</p>
+      </div>
+
+      <div class="card">
+        <h2>🧍 ตั้งค่าตัวละคร</h2>
+        <label class="check"><input type="checkbox" id="avOn" /> <b>แสดงตัวละครบนหน้าเวที</b></label>
+        <label class="check"><input type="checkbox" id="avReact" /> ทำท่าทางตามเหตุการณ์ในไลฟ์ (คนเข้า ของขวัญ ติดตาม ชนะเกม คอมเมนต์ทักทาย/หัวเราะ)</label>
+        <label class="check"><input type="checkbox" id="avBubble" /> ขึ้น<b>บอลลูนคำพูด</b>ข้างหัวตัวละครตอนอ่านข้อความ</label>
+        <label class="check"><input type="checkbox" id="avWander" /> ให้ตัวละคร<b>เดินเล่น</b>ไปมาเล็กน้อยตอนว่าง (เฉพาะมุมเต็มตัว)</label>
+        <div class="grid2" style="margin-top:8px">
+          <div class="field"><label>ตำแหน่งซ้าย-ขวา <b id="avXV"></b></label><input type="range" id="avX" min="150" max="930" step="10" style="width:100%" />
+            <div class="row" style="gap:6px;margin-top:6px"><button class="btn sm" data-avx="left">⬅ ฝั่งซ้าย</button><button class="btn sm" data-avx="center">กลาง</button><button class="btn sm" data-avx="right">ฝั่งขวา ➡</button></div></div>
+          <div class="field"><label>ระดับเท้า (บน-ล่าง) <b id="avYV"></b></label><input type="range" id="avY" min="900" max="2400" step="10" style="width:100%" /></div>
+          <div class="field"><label>ขนาดตัวละคร <b id="avHV"></b></label><input type="range" id="avH" min="400" max="2000" step="10" style="width:100%" /></div>
+        </div>
+        <p class="muted" style="margin:0 0 10px">ตำแหน่งเก็บแยกแต่ละธีม (และแยกเต็มตัว/ครึ่งตัว) — ค่าเริ่มต้นวางให้เข้ากับฉากแล้ว • เลื่อนแล้วหน้าเวทีเปลี่ยนตามทันที • ระวังอย่าให้หน้าตัวละครอยู่ตรงที่คอมเมนต์ TikTok ทับ (ครึ่งล่างฝั่งซ้าย)</p>
+        <div class="row"><button class="btn warn" id="avSave">บันทึก</button><button class="btn" id="avResetPos">คืนตำแหน่งเริ่มต้นของธีมนี้</button><span class="saved" id="avSaved">บันทึกแล้ว ✓</span></div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h2>🎬 ทดสอบท่าทาง</h2>
+          <div class="row" style="flex-wrap:wrap;gap:8px">
+            <button class="btn" data-pose="wave">👋 โบกมือ</button>
+            <button class="btn" data-pose="wai">🙏 ไหว้</button>
+            <button class="btn" data-pose="clap">👏 ปรบมือ</button>
+            <button class="btn" data-pose="happy">🥳 ดีใจ</button>
+            <button class="btn" data-pose="heart">🫶 มือหัวใจ</button>
+            <button class="btn" data-pose="think">🤔 คิด</button>
+            <button class="btn" data-pose="bow">🙇 โค้ง</button>
+            <button class="btn" data-pose="kiss">😘 ส่งจูบ</button>
+            <button class="btn" data-pose="surprised">😲 ตกใจดีใจ</button>
+            <button class="btn" data-pose="peace">✌️ ชูสองนิ้ว</button>
+            <button class="btn" data-pose="shy">☺️ เขิน</button>
+            <button class="btn" data-pose="dance">💃 เต้น</button>
+            <button class="btn" data-pose="spin">🌀 หมุนตัว</button>
+            <button class="btn" data-pose="scared">😱 กลัวผี</button>
+            <button class="btn" data-pose="splash">💦 สาดน้ำ</button>
+            <button class="btn" data-pose="cheer">🎉 เชียร์</button>
+            <button class="btn" data-pose="nod">🙂 พยักหน้า</button>
+            <button class="btn" data-pose="bless">🤚 ให้พร</button>
+            <button class="btn" data-pose="lookL">👈 มองซ้าย</button>
+            <button class="btn" data-pose="lookR">👉 มองขวา</button>
+          </div>
+          <div class="row" id="avClipBtns" style="flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+          <p class="muted">ตอนว่าง ตัวละครจะทำท่าเล่นเอง (เอียงคอ จับผม บิดขี้เกียจ ชูสองนิ้ว มองรอบ ๆ) และเดินเล่นซ้าย-ขวาบนเวที</p>
+        </div>
+        <div class="card">
+          <h2>🎤 ปากขยับตามเสียงคุณ</h2>
+          <p class="muted" style="margin-top:0">เปิดแล้วหน้านี้จะฟังไมค์ แล้วส่งระดับเสียงไปให้ปากตัวละครขยับตามตอนคุณพูด (ต้องเปิดหน้าหลังบ้านนี้ค้างไว้ระหว่างไลฟ์)
+            — <b>แนะนำ</b>: ไลฟ์ที่มีคนจริงพูดปลอดภัยกว่าให้ตัวละครพูดเองล้วน ๆ</p>
+          <div class="row"><button class="btn primary" id="avMic">🎤 เริ่มขยับปากตามไมค์</button><span class="muted" id="avMicMeter"></span></div>
+          <div class="field" style="margin-top:8px"><label>ความไวไมค์ <b id="avSensV"></b></label><input type="range" id="avSens" min="1" max="10" step="0.5" value="5" style="width:100%" /></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🎭 ท่าทางตามเหตุการณ์</h2>
+        <p class="muted" style="margin-top:0">เลือกท่าของแต่ละเหตุการณ์ — "ค่าเริ่มต้น" = ระบบเลือกให้ตามธีม (เช่น ธีมไหว้ศาล ของขวัญเล็ก → ไหว้) • ท่าจากไฟล์ mocap ที่อัปโหลดด้านล่างจะขึ้นในรายการด้วย</p>
+        <table class="tbl" id="avMapTbl"></table>
+        <div class="row" style="margin-top:10px"><button class="btn warn" id="avMapSave">บันทึกท่าทาง</button><span class="saved" id="avMapSaved">บันทึกแล้ว ✓</span></div>
+      </div>
+
+      <div class="card">
+        <h2>🎞️ ท่าทางจากไฟล์ mocap (ไม่บังคับ)</h2>
+        <p class="muted" style="margin-top:0">อยากได้ท่าลื่นแบบคนจริง เช่น ท่าเต้น — ใส่ไฟล์ท่าได้ 2 แบบ:</p>
+        <ol class="muted" style="margin:0 0 10px;padding-left:20px;line-height:1.8">
+          <li><b>Mixamo</b> (mixamo.com ฟรี ต้องมีบัญชี Adobe) → เลือกท่า → Download แบบ <b>FBX Binary</b>, <b>Without Skin</b> → ได้ไฟล์ <code>.fbx</code></li>
+          <li><b>VRM Animation</b> (<code>.vrma</code>) เช่น ชุดท่าฟรีของ VRoid / pixiv บน Booth</li>
+        </ol>
+        <div class="row">
+          <input type="file" id="mvFile" accept=".fbx,.vrma" multiple />
+          <button class="btn warn" id="mvUpload">⬆ อัปโหลดท่า</button>
+          <span class="muted" id="mvMsg"></span>
+        </div>
+        <div id="mvList" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <h2>📦 โมเดลตัวละคร (.vrm)</h2>
+        <p class="muted" style="margin-top:0">ตอนนี้ใช้: <b id="avModel">-</b></p>
+        <ol class="muted" style="margin:0 0 10px;padding-left:20px;line-height:1.8">
+          <li>ปั้นตัวละครเองฟรีด้วย <b>VRoid Studio</b> (Windows/Mac) — เลือกหน้า ผม ชุด ได้เหมือนเกมแต่งตัว</li>
+          <li>กด "ส่งออก VRM" ได้ไฟล์ <code>.vrm</code> แล้วอัปโหลดที่นี่ — หน้าเวทีเปลี่ยนตัวละครทันที</li>
+          <li>ตัวละครต้องออกแบบเอง (ห้ามก๊อปตัวการ์ตูนที่มีลิขสิทธิ์) และแต่งตัวเรียบร้อย</li>
+        </ol>
+        <div class="row">
+          <input type="file" id="avFile" accept=".vrm" />
+          <button class="btn warn" id="avUpload">⬆ อัปโหลด</button>
+          <button class="btn" id="avReset">กลับไปใช้ตัวอย่าง</button>
+          <span class="muted" id="avUpMsg"></span>
+        </div>
+        <p class="muted" style="margin:8px 0 0">อัปโหลดแล้วระบบจะเปลี่ยนไปใช้ตัวที่อัปโหลดให้เอง (เลือกกลับเป็นตัวที่ติดมาได้ที่ "เลือกตัวละคร")</p>
+      </div>
+    </section>
+
+    <section class="page" id="page-test">
+      <h1>ทดสอบ</h1>
+      <div class="test-lock" id="testLock" hidden role="alert">🔒 <div><b>ปิดปุ่มทดสอบระหว่างไลฟ์จริง</b><br>ของขวัญ เพชร กุหลาบ คอมเมนต์ทดสอบจะขึ้นในไลฟ์ให้คนดูเห็น — TikTok อาจมองว่าเป็นของขวัญปลอม/หลอกลวง เสี่ยงโดนแบน • ตัดการเชื่อมต่อก่อน แล้วค่อยทดสอบ</div></div>
+      <p class="lead">ลองทุกอย่างได้โดยไม่ต้องไลฟ์ ข้อมูลทดสอบจะขึ้นบนหน้าไลฟ์เหมือนของจริง (ใช้ของขวัญของธีมที่ใช้อยู่)</p>
+      <div class="card">
+        <h2>เป็นคนดู</h2>
+        <div class="field"><label>ชื่อคนดูทดสอบ</label><input type="text" id="tName" value="น้องเมย์ 🌸" /></div>
+        <div class="field"><label>คอมเมนต์</label>
+          <div class="row" style="flex-wrap:nowrap"><input type="text" id="tText" value="สวัสดีค่ะ มาแล้วจ้า" /><button class="btn warn" id="tChat" style="white-space:nowrap">ส่งคอมเมนต์</button></div>
+        </div>
+        <label>ส่งของขวัญ</label>
+        <div class="row" id="tGifts" style="margin-bottom:10px"></div>
+        <div class="row">
+          <button class="btn" data-t="join">👋 เข้ามา</button>
+          <button class="btn" data-t="like">❤ กดหัวใจ</button>
+          <button class="btn" data-t="follow">➕ กดติดตาม</button>
+          <button class="btn" data-t="share">↗ แชร์</button>
+          <button class="btn" id="tSong">📜 คำขอทดสอบ</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h2>คนดูจำลอง</h2>
+          <div class="row">
+            <button class="btn" id="tCrowd">+10 คนดูจำลอง</button>
+            <button class="btn" id="tAuto">▶ โหมดเดโมอัตโนมัติ</button>
+          </div>
+          <p class="muted">โหมดเดโมสุ่มคอมเมนต์ ไลก์ และของขวัญเรื่อย ๆ เหมาะกับเช็กหน้าตาก่อนไลฟ์</p>
+        </div>
+        <div class="card">
+          <h2>ล้างฉาก</h2>
+          <div class="row">
+            <button class="btn" id="clearAudience">ให้ทุกคนออกจากฉาก</button>
+            <button class="btn" id="clearTop">ล้าง Top 5</button>
+            <button class="btn" id="resetHype">รีเซ็ตหลอดพลัง</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>สั่งเอฟเฟกต์ทันที <span class="badge" id="fxTheme"></span></h2>
+        <div class="row" id="fxButtons"></div>
+      </div>
+    </section>
+
+    <!-- เช็คก่อนไลฟ์ -->
+    <section class="page" id="page-pre">
+      <h1>เช็คก่อนไลฟ์</h1>
+      <p class="lead">ระบบตรวจให้อัตโนมัติ — เปิด TikTok LIVE Studio (ที่ใส่แหล่ง Link หน้าเวทีไว้) ก่อน แล้วดูหน้านี้ ถ้าขึ้น ✓ เขียวทั้งหมดก็ไลฟ์ได้เลย</p>
+      <div class="card">
+        <h2>สถานะ <button class="btn sm" id="preRefresh" style="margin-left:8px">↻ เช็คใหม่</button></h2>
+        <div id="preList" class="pre-list"></div>
+      </div>
+      <div class="card">
+        <h2>หน้าเวทีที่เปิดอยู่ตอนนี้</h2>
+        <div id="preStages"></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="preIdentify">🔢 ขึ้นเลขบนหน้าเวทีทุกจอ</button>
+          <span class="muted">ใช้หาว่าเปิดหน้าเวทีซ้อนไว้ที่ไหน (เช่น LIVE Studio + เบราว์เซอร์อีกแท็บ = เสียงพูดซ้อน)</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>ลองทีละอย่าง (ขึ้นบนหน้าเวทีจริง)</h2>
+        <div class="row">
+          <button class="btn" id="preTts">🔊 ทดสอบเสียงพูด</button>
+          <button class="btn" id="prePose">🧍 ให้ตัวละครโบกมือ</button>
+          <button class="btn" id="preFx">🎆 ทดสอบเอฟเฟกต์ใหญ่</button>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <h2>📡 ตัวเฝ้าการเชื่อมต่อ</h2>
+          <label class="check"><input type="checkbox" id="wdOn" /> เตือนเมื่อไม่มีข้อมูลจาก TikTok นานผิดปกติ (แถบแดง + เสียงเตือนที่หน้านี้)</label>
+          <div class="field" style="max-width:240px"><label>เตือนเมื่อเงียบเกิน (นาที)</label><input type="number" id="wdMin" min="1" max="10" /></div>
+          <label class="check"><input type="checkbox" id="wdFix" /> ต่อการเชื่อมต่อใหม่ให้เอง (ถ้ายังเงียบอีก 1 นาทีหลังเตือน)</label>
+          <span class="saved" id="wdSaved">บันทึกแล้ว ✓</span>
+        </div>
+        <div class="card">
+          <h2>⚡ ปรับคุณภาพภาพอัตโนมัติ</h2>
+          <label class="check"><input type="checkbox" id="perfAuto" /> เครื่องเริ่มกระตุก → ลดเอฟเฟกต์/ความละเอียดตัวละครเองชั่วคราว แล้วค่อยเพิ่มกลับเมื่อเครื่องว่าง</label>
+          <p class="muted" id="perfNow"></p>
+          <span class="saved" id="perfSaved">บันทึกแล้ว ✓</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>💾 สำรองข้อมูลอัตโนมัติ</h2>
+        <p class="muted">สำรองการตั้งค่า เลเวลแฟน และคะแนนเกม ไว้ที่โฟลเดอร์ <code>data/backups</code> ทุกวัน (เก็บ 14 วันล่าสุด) — ถ้าข้อมูลพัง คัดลอกไฟล์จากวันที่ต้องการกลับไปไว้ที่ <code>data</code> แล้วเปิดโปรแกรมใหม่</p>
+        <div class="row"><span id="preBackup" class="muted"></span><button class="btn sm" id="preBackupNow">สำรองตอนนี้</button></div>
+      </div>
+    </section>
+
+    <!-- ภารกิจ & สรุปไลฟ์ -->
+    <section class="page" id="page-custom">
+      <style>
+        #page-custom { max-width: none; }
+        #page-custom .cu-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+        #page-custom .cu-top h1 { margin: 0; }
+        #page-custom .cu-top .lead { margin: 4px 0 0; }
+        #page-custom .cu-acts { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        #page-custom .cu-dirty { color: var(--warn); font-size: 13px; }
+        #page-custom .cu-grid { display: grid; grid-template-columns: 260px minmax(400px, 1fr) 330px; gap: 14px; align-items: start; }
+        @media (max-width: 1150px) { #page-custom .cu-grid { grid-template-columns: 230px minmax(400px, 1fr); } #page-custom .cu-props { grid-column: 1 / -1; } }
+        #page-custom .cu-side { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+        #page-custom .cu-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+        #page-custom .cu-tabs button { flex: 1; padding: 7px 0; border-radius: 10px; border: 1px solid var(--line); background: #1d1a19; color: var(--text); font: inherit; font-weight: 600; cursor: pointer; }
+        #page-custom .cu-tabs button.on { background: #c9b8ff; color: #1a1410; border-color: #c9b8ff; }
+        #page-custom .cu-hint { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
+        #page-custom .cu-tiles { display: flex; flex-direction: column; gap: 6px; }
+        #page-custom .cu-tile { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 12px; border: 1px solid var(--line); background: #1d1a19; cursor: grab; user-select: none; }
+        #page-custom .cu-tile:hover { border-color: #c9b8ff; }
+        #page-custom .cu-tile.sel { border-color: #c9b8ff; box-shadow: 0 0 0 2px rgba(201,184,255,.25); }
+        #page-custom .cu-tile.off { border-style: dashed; opacity: .7; }
+        #page-custom .cu-tile .g { color: #5a534d; letter-spacing: -2px; font-size: 12px; }
+        #page-custom .cu-tile .e { width: 30px; height: 30px; flex: none; border-radius: 8px; background: #2a2420; display: grid; place-items: center; font-size: 16px; }
+        #page-custom .cu-tile b { display: block; font-size: 13px; }
+        #page-custom .cu-tile small { display: block; color: var(--muted); font-size: 11px; }
+        #page-custom .cu-stks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        #page-custom .cu-stk { height: 46px; border-radius: 10px; border: 1px solid var(--line); background: #1d1a19; display: grid; place-items: center; font-size: 22px; cursor: grab; user-select: none; }
+        #page-custom .cu-stk:hover { border-color: #c9b8ff; }
+        #page-custom .cu-scenes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        #page-custom .cu-scene { padding: 0; border: 2px solid var(--line); border-radius: 10px; overflow: hidden; background: #000; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+        #page-custom .cu-scene img { display: block; width: 100%; aspect-ratio: 9 / 16; object-fit: cover; }
+        #page-custom .cu-scene span { display: block; padding: 4px 6px; background: var(--card); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #page-custom .cu-scene.on { border-color: var(--accent); }
+        #page-custom .cu-pic { padding: 10px; margin-bottom: 12px; border-radius: 12px; border: 1px solid #c9b8ff55; background: linear-gradient(160deg, rgba(201,184,255,.12), transparent); }
+        #page-custom .cu-pic label { display: block; font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+        #page-custom .cu-pic label select, #page-custom .cu-pic label input[type=range] { display: block; width: 100%; margin-top: 3px; }
+        #page-custom .cu-pic .cu-ck { display: flex; gap: 6px; align-items: center; }
+        #page-custom .cu-scenes.dim { opacity: .45; }
+        /* หน้าเวที */
+        #page-custom .cu-board { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 10px; border-radius: 18px; border: 1px solid var(--line);
+          background-color: #111010; background-image: radial-gradient(#2a2623 1px, transparent 1px); background-size: 18px 18px; }
+        #page-custom .cu-stage { position: relative; width: 378px; height: 672px; border-radius: 16px; overflow: hidden; box-shadow: 0 18px 44px rgba(0,0,0,.6); background: #000; }
+        #page-custom .cu-stage iframe { position: absolute; inset: 0; width: 378px; height: 672px; border: 0; }
+        #page-custom .cu-ov { position: absolute; inset: 0; cursor: default; }
+        #page-custom .cu-ov.drop { outline: 3px dashed #c9b8ff; outline-offset: -3px; }
+        #page-custom .cu-sz { position: absolute; background: repeating-linear-gradient(45deg, rgba(255,255,255,.13) 0 6px, rgba(0,0,0,.12) 6px 12px); pointer-events: none; }
+        #page-custom .cu-sz span { position: absolute; left: 4px; bottom: 3px; font-size: 10px; color: #fff; background: rgba(0,0,0,.55); padding: 1px 6px; border-radius: 5px; white-space: nowrap; }
+        #page-custom .cu-box { position: absolute; pointer-events: none; border-radius: 6px; }
+        #page-custom .cu-box.hov { outline: 1.5px dashed rgba(201,184,255,.9); }
+        #page-custom .cu-box.sel { outline: 2px solid #c9b8ff; outline-offset: 2px; }
+        #page-custom .cu-hd { position: absolute; right: -9px; bottom: -9px; width: 14px; height: 14px; border-radius: 4px; background: #fff; border: 2px solid #c9b8ff; pointer-events: auto; cursor: nwse-resize; }
+        #page-custom .cu-gl { position: absolute; background: #ff4fd8; pointer-events: none; }
+        #page-custom .cu-tb { position: absolute; display: flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); box-shadow: 0 8px 20px rgba(0,0,0,.45); white-space: nowrap; z-index: 2; }
+        #page-custom .cu-tb button { border: 0; background: none; color: var(--text); font: inherit; font-size: 12px; padding: 5px 8px; border-radius: 7px; cursor: pointer; }
+        #page-custom .cu-tb button:hover { background: #2a2623; }
+        #page-custom .cu-opts { display: flex; gap: 14px; color: var(--muted); font-size: 12px; flex-wrap: wrap; justify-content: center; }
+        #page-custom .cu-opts label { display: flex; gap: 5px; align-items: center; }
+        /* แผงขวา */
+        #page-custom .cu-props { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+        #page-custom .cu-props h3 { margin: 0 0 10px; font-size: 16px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        #page-custom .cu-props label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+        #page-custom .cu-props label input, #page-custom .cu-props label select { display: block; width: 100%; margin-top: 3px; color: var(--text); }
+        #page-custom .cu-sw { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; margin: 4px 0 10px; }
+        #page-custom .cu-sw button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
+        #page-custom .cu-sw button.on { outline: 2px solid #fff; outline-offset: 2px; }
+        #page-custom .cu-sw .auto { width: auto; padding: 0 8px; border-radius: 999px; background: #1d1a19; color: var(--text); border-color: var(--line); font-size: 11px; }
+        #page-custom .cu-sw input[type=color] { width: 30px; height: 28px; padding: 1px; }
+        #page-custom .cu-warn { font-size: 12px; color: var(--warn); background: #2b2410; border-radius: 10px; padding: 7px 10px; margin: 6px 0 10px; }
+        #page-custom .cu-row2 { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
+        #page-custom details { border: 1px solid var(--line); border-radius: 12px; background: #1d1a19; margin-top: 8px; }
+        #page-custom details > summary { padding: 10px 12px; cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; }
+        #page-custom details > summary::after { content: '›'; color: var(--muted); }
+        #page-custom details[open] > summary::after { content: '⌄'; }
+        #page-custom details > div { padding: 0 12px 12px; }
+        #page-custom .cu-line { display: flex; gap: 5px; align-items: center; margin-bottom: 6px; }
+        #page-custom .cu-line input, #page-custom .cu-line select { padding: 5px 7px; font-size: 13px; min-width: 0; width: auto; margin: 0; }
+        #page-custom .cu-line .em { width: 40px; flex: none; text-align: center; }
+        #page-custom .cu-line .grow { flex: 1 1 80px; }
+        #page-custom .cu-line .w { width: 84px; flex: none; }
+        #page-custom .cu-line .gift { width: 26px; flex: none; text-align: center; font-size: 18px; }
+        #page-custom .cu-line button { flex: none; }
+        #page-custom .cu-pals { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        #page-custom .cu-pal { display: flex; border-radius: 8px; overflow: hidden; border: 2px solid var(--line); cursor: pointer; padding: 0; background: none; }
+        #page-custom .cu-pal i { width: 12px; height: 24px; }
+        #page-custom .cu-colors { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        #page-custom .cu-colors label { display: flex; align-items: center; gap: 6px; margin: 0; }
+        #page-custom .cu-colors input { width: 34px; height: 26px; padding: 1px; flex: none; margin: 0; }
+      </style>
+      <div class="cu-top">
+        <div>
+          <h1>สร้างธีมเอง <span class="badge">ผู้สนับสนุน</span></h1>
+          <p class="lead">ลากบล็อกไปวางบนหน้าเวที กดที่อะไรก็แก้ตรงนั้นได้เลย</p>
+          <p class="muted" id="cuLocked" hidden>ธีมที่สร้างเองใช้ได้กับบัญชีผู้สนับสนุน TubHool — แก้และบันทึกไว้ก่อนได้ แต่จะเปลี่ยนไปใช้ได้เมื่อเป็นผู้สนับสนุน</p>
+        </div>
+        <div class="cu-acts">
+          <span class="muted" id="cuTip" style="font-size:13px"></span><span class="cu-dirty" id="cuDirty" hidden>● ยังไม่ได้บันทึก</span><span class="saved" id="cuSaved">บันทึกแล้ว ✓</span>
+          <button class="btn sm" id="cuUndo" type="button" title="ย้อนกลับ (Ctrl+Z)">↶</button><button class="btn sm" id="cuRedo" type="button" title="ทำซ้ำ (Ctrl+Y)">↷</button>
+          <button class="btn sm" id="cuTryBig" type="button">▶ ลองของขวัญใหญ่</button>
+          <button class="btn" id="cuSave" type="button">💾 บันทึกธีม</button><button class="btn primary" id="cuUse" type="button">ใช้ธีมนี้บนหน้าเวที</button>
+        </div>
+      </div>
+      <div class="cu-grid">
+        <div class="cu-side">
+          <div class="cu-tabs" id="cuTabs"><button type="button" data-t="blocks" class="on">บล็อก</button><button type="button" data-t="scene">ฉาก</button><button type="button" data-t="deco">ตกแต่ง</button></div>
+          <div data-tp="blocks"><p class="cu-hint">ลากไปวางบนหน้าเวที หรือกดเพื่อเลือก • เส้นประ = ซ่อนอยู่</p><div class="cu-tiles" id="cuTiles"></div></div>
+          <div data-tp="scene" hidden>
+            <div class="cu-pic">
+              <b>🖼️ ภาพของฉัน (2.5D)</b>
+              <p class="cu-hint" style="margin:4px 0 8px">ใส่ภาพแนวตั้ง 9:16 แล้ว AI ทำความลึกให้ภาพขยับมีมิติ มีละอองแสง/แสงเรือง • ครั้งแรกโหลดตัวช่วย ~30MB</p>
+              <input type="file" id="cuPicFile" accept="image/jpeg,image/png,image/webp" hidden>
+              <button class="btn sm primary" id="cuPicUp" type="button" style="width:100%">📤 อัปโหลดภาพ</button>
+              <div class="cu-hint" id="cuPicStat" style="margin:6px 0 0"></div>
+              <div id="cuPicOpts" hidden>
+                <label>ละอองในฉาก <select id="cuPicFx"><option value="gold">✨ ประกายทอง</option><option value="petal">🌸 กลีบดอกไม้ร่วง</option><option value="snow">❄️ หิมะ</option><option value="firefly">🟢 หิ่งห้อย</option><option value="bokeh">🫧 แสงโบเก้</option><option value="none">ไม่มี</option></select></label>
+                <label>กล้องขยับ <input type="range" id="cuPicMotion" min="0" max="2" step="0.1"></label>
+                <label>แสงเรือง <input type="range" id="cuPicGlow" min="0" max="2" step="0.1"></label>
+                <label class="cu-ck"><input type="checkbox" id="cuPicRays"> ลำแสงส่องจากฟ้า</label>
+                <label>ตำแหน่งคนดู ขึ้น ↔ ลง <input type="range" id="cuPicFloor" min="-300" max="200" step="10"></label>
+                <p class="cu-hint" style="margin:0 0 6px">ตำแหน่งคนดูมีผลหลังกดบันทึก</p>
+                <button class="btn sm danger" id="cuPicDel" type="button" style="width:100%">เอาภาพออก (กลับไปใช้ฉากวาด)</button>
+              </div>
+            </div>
+            <p class="cu-hint">หรือเลือกฉากวาด • สีฉากเปลี่ยนตาม</p><div class="cu-scenes" id="cuScenes"></div>
+            <button class="btn sm" id="cuReset" type="button" style="margin-top:10px;width:100%">↺ ใช้ค่าทั้งหมดของฉากนี้</button></div>
+          <div data-tp="deco" hidden><p class="cu-hint">ลากสติกเกอร์ไปวาง หรือกดเพื่อวางกลางจอ</p><div class="cu-stks" id="cuStks"></div></div>
+        </div>
+        <div class="cu-board">
+          <div class="cu-stage" id="cuStage">
+            <iframe id="cuPrev" title="หน้าเวทีของธีมที่สร้างเอง" tabindex="-1"></iframe>
+            <div class="cu-ov" id="cuOv"></div>
+          </div>
+          <div class="cu-opts">
+            <label><input type="checkbox" id="cuSafe" checked> แสดงพื้นที่ที่ TikTok บัง</label>
+            <label><input type="checkbox" id="cuSnap" checked> จัดชิดอัตโนมัติ</label>
+            <button class="btn sm" id="cuResetLayout" type="button">↺ คืนตำแหน่งทั้งหมด</button>
+          </div>
+          <p class="cu-hint" style="text-align:center;margin:0">ลากเพื่อย้าย • ลากมุมขวาล่างเพื่อย่อขยาย • ดับเบิลคลิกเพื่อแก้ข้อความ • ลูกศรขยับทีละนิด • Delete ซ่อน</p>
+        </div>
+        <div class="cu-props" id="cuProps">
+          <div id="cuSelProps"></div>
+          <h3 style="margin-top:6px">ตั้งค่าทั้งธีม</h3>
+          <details id="cuDName"><summary>🏷️ ชื่อธีม</summary><div><label>ชื่อธีม <input id="cu_name" maxlength="30"></label><label>ไอคอน (อีโมจิ) <input id="cu_icon" maxlength="8"></label></div></details>
+          <details id="cuDFx"><summary>🎁 ของขวัญ → เอฟเฟกต์</summary><div><div class="cu-row2"><button class="btn sm" id="cuFxAuto" type="button">✨ สุ่มจัดให้</button><button class="btn sm" id="cuFxBase" type="button">↺ ชุดของฉากนี้</button></div><div id="cuFx"></div></div></details>
+          <details id="cuDCmd"><summary>⌨️ คำสั่งพิมพ์</summary><div><div id="cuCmds"></div><select id="cuCmdAdd"></select></div></details>
+          <details id="cuDWords"><summary>🎤 คำพูดพิธีกร</summary><div>
+            <label>คำตอนโชว์ใหญ่ <input id="cu_bigWord" maxlength="20"></label><label>คำตอนพลังเต็ม <input id="cu_hypeFull" maxlength="40"></label><label>คำตอนคนเข้า <input id="cu_joinVerb" maxlength="30"></label></div></details>
+          <details id="cuDPal"><summary>🎨 ชุดสีทั้งธีม</summary><div><div class="cu-pals" id="cuPals"></div><div class="cu-colors" id="cuPal"></div></div></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-brk">
+      <h1>รอเริ่ม / พักเบรก</h1>
+      <p class="lead">ขึ้นนับถอยหลังกลางหน้าเวที ฉากและคนในฉากยังขยับอยู่ คอมเมนต์ เกม ของขวัญ ทำงานตามปกติ</p>
+      <div class="card">
+        <h2>⏳ ฉากรอเริ่มไลฟ์</h2>
+        <div class="grid2">
+          <label>หัวข้อไลฟ์<input id="bkTitle" placeholder="คืนนี้: แจกของ + ควิซชิงรางวัล" /></label>
+          <label>ข้อความรอง<input id="bkSub" placeholder="ขอเพลงได้ · เล่นเกมระหว่างรอ" /></label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <label class="muted">นับถอยหลัง <select id="bkMin"><option value="0">ไม่นับเวลา</option><option value="1">1 นาที</option><option value="3">3 นาที</option><option value="5" selected>5 นาที</option><option value="10">10 นาที</option><option value="15">15 นาที</option></select></label>
+          <button class="btn primary" id="bkSoon">ขึ้นฉากรอเริ่ม</button>
+        </div>
+        <p class="muted">ระหว่างรอ คนดูพิมพ์ “มาแล้ว” → ชื่อขึ้นป้ายมาก่อน และได้ +10 แต้ม</p>
+      </div>
+      <div class="card">
+        <h2>☕ พักเบรก</h2>
+        <div class="row">
+          <label class="muted">กลับมาใน <select id="bkBrbMin"><option value="0">ไม่นับเวลา</option><option value="1">1 นาที</option><option value="3" selected>3 นาที</option><option value="5">5 นาที</option><option value="10">10 นาที</option></select></label>
+          <button class="btn primary" id="bkBrb">พักเบรก</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <button class="btn danger" id="bkEnd">▶ กลับเข้าไลฟ์ (ปิดฉากรอ/พัก)</button>
+          <span class="muted" id="bkNow"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-cf">
+      <h1>ขายของ (CF) <span class="badge">ผู้สนับสนุน</span></h1>
+      <div class="card cf-lock" id="cfLock" hidden>
+        <div class="cf-lock-ic">🔒</div>
+        <div style="flex:1"><b>ขายของ CF ใช้ได้กับบัญชีผู้สนับสนุน TubHool</b><div class="muted">คนดูพิมพ์ CF แล้วจดออเดอร์ ตัดสต็อก ขึ้นการ์ดสินค้าพร้อมรูปบนหน้าเวที — สนับสนุนแล้วเปิดใช้ได้ทันที</div></div>
+        <button class="btn warn" id="cfUnlock" type="button">ปลดล็อก</button>
+      </div>
+      <p class="lead">คนดูพิมพ์ “CF รหัส” ในคอมเมนต์ เช่น <b>CF A1</b> · <b>CF A1 2</b> (2 ชิ้น) · <b>CF A1 สีแดง</b> → จดออเดอร์และตัดสต็อกให้อัตโนมัติ ไม่เก็บเงินในโปรแกรม แค่จดยอด</p>
+      <div class="cf-body">
+      <div class="card">
+        <h2>⚙️ ตั้งค่า</h2>
+        <label class="check"><input type="checkbox" id="cfOn" /> เปิดรับ CF จากคอมเมนต์</label>
+        <label class="check"><input type="checkbox" id="cfAnn" /> ตัวละครพูดขอบคุณคนที่ CF</label>
+        <p class="muted" id="cfShowNow"></p>
+      </div>
+      <div class="card">
+        <h2>🏷️ สินค้าในไลฟ์นี้ <span class="badge" id="cfCount"></span></h2>
+        <div class="cf-drop" id="cfDrop">
+          <div class="cf-drop-ic">🖼️</div>
+          <div style="flex:1"><b>ลากรูปสินค้ามาวางที่นี่ — วางหลายรูปพร้อมกันได้</b><div class="muted">1 รูป = สินค้าใหม่ 1 รายการ รหัสเรียงให้เอง แล้วค่อยใส่ชื่อ ราคา จำนวน • คัดลอกรูปแล้วกด Ctrl+V ที่แถวที่เลือกก็ได้</div></div>
+          <button class="btn" id="cfPickMany" type="button">เลือกไฟล์รูป</button>
+        </div>
+        <input type="file" id="cfFile" accept="image/*" hidden>
+        <input type="file" id="cfFiles" accept="image/*" multiple hidden>
+        <table class="tbl cf-tbl" id="cfTbl"></table>
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm" id="cfAdd">+ เพิ่มสินค้า</button>
+          <button class="btn primary" id="cfSave">บันทึกสินค้า</button>
+          <label class="muted">ปิดรับหลังโชว์
+            <select id="cfSec"><option value="0">ไม่จำกัดเวลา</option><option value="60">1 นาที</option><option value="120">2 นาที</option><option value="180" selected>3 นาที</option><option value="300">5 นาที</option><option value="600">10 นาที</option></select>
+          </label>
+          <button class="btn" id="cfHide">เลิกโชว์การ์ดสินค้า</button>
+          <span class="saved" id="cfSaved">บันทึกแล้ว ✓</span>
+        </div>
+        <p class="muted">จำนวนว่าง = ไม่จำกัด • ของหมดแล้วคนที่ CF ทีหลังเข้า “คิวสำรอง” • กด “โชว์” เพื่อขึ้นการ์ดสินค้าบนหน้าเวทีพร้อมนับถอยหลัง</p>
+      </div>
+      <div class="card">
+        <h2>🧾 ออเดอร์ <span class="badge" id="cfTotal"></span></h2>
+        <div class="row">
+          <button class="btn primary" id="cfExport">ส่งออก Excel (CSV)</button>
+          <button class="btn" id="cfCopy">คัดลอกรายชื่อ</button>
+          <button class="btn danger" id="cfClear">เริ่มรอบขายใหม่</button>
+          <span class="saved" id="cfCopied">คัดลอกแล้ว ✓</span>
+        </div>
+        <div style="max-height:520px;overflow:auto;margin-top:10px"><table class="tbl cf-orders" id="cfOrders"></table></div>
+      </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-live">
+      <div class="card lg-head" id="lgHead">
+        <div class="lg-ic" id="lgIcon">🕹️</div>
+        <div class="lg-tt"><div class="muted" id="lgState"></div><div class="lg-nm" id="lgName"></div></div>
+        <div class="lg-chips" id="lgChips"></div>
+        <label class="lg-pick">🎮 เปลี่ยนเกม<select id="lgPick"></select></label>
+      </div>
+      <div class="lg-grid">
+        <div class="card"><h2>⚡ เรียกเหตุการณ์</h2><div class="lg-tiles" id="lgEvents"></div><p class="muted" id="lgEvNote"></p></div>
+        <div class="card"><h2>📡 สถานะสด</h2><div id="lgLive" class="lg-live"></div></div>
+        <div class="card lg-queue">
+          <div class="lg-qh"><h2>🔁 คิวเกม</h2><label class="check" style="margin:0"><input type="checkbox" id="rotOn" /> เปลี่ยนอัตโนมัติ</label></div>
+          <div class="muted">สลับเกมทุก <input type="number" id="rotMin" min="3" max="120" style="width:64px;display:inline-block;padding:4px 8px" /> นาที · <span id="rotLeft"></span></div>
+          <div id="rotList" class="lg-qlist"></div>
+          <div class="row" style="gap:6px"><select id="rotAdd" style="flex:1"></select><button class="btn sm" id="rotAddBtn">＋ เพิ่ม</button></div>
+          <button class="btn primary" id="rotNow">⏭️ ข้ามไปเกมถัดไป (นับ 10 วิ)</button>
+          <span class="saved" id="rotSaved">บันทึกแล้ว ✓</span>
+        </div>
+      </div>
+      <details class="card lg-acc" id="lgSet"><summary>⚙️ ตั้งค่าเกมนี้</summary><div id="lgSetBody"></div></details>
+      <details class="card lg-acc" id="lgStats"><summary>📊 สถิติ & ล้างข้อมูลข้ามไลฟ์</summary><div id="lgStatsBody"></div></details>
+    </section>
+
+    <section class="page" id="page-play">
+      <h1>คำสั่ง & แต้มคนดู</h1>
+      <p class="lead">คนดูพิมพ์คำสั่งในคอมเมนต์เพื่อเล่นกับฉาก สะสมแต้ม แล้วแลกของบนหน้าเวที</p>
+      <div class="card">
+        <h2>⌨️ คำสั่งพิมพ์ของธีมนี้</h2>
+        <label class="check"><input type="checkbox" id="plOn" /> เปิดคำสั่งพิมพ์ (ธีมเลย์เอาต์งานวัด LIVE: งานวัด ตลาดน้ำ ตลาดนัด มวยไทย ริมหาด ทุ่งนา คาเฟ่ กีฬาสี)</label>
+        <div class="row"><label>พิมพ์คำสั่งเดิมซ้ำได้ทุก <input type="number" id="plCd" min="3" max="300" style="width:80px" /> วินาที (กันสแปม)</label></div>
+        <div id="plCmds" class="muted"></div>
+      </div>
+      <div class="card">
+        <h2>🌱 น้องโตตามเช็คพอยต์ <span class="badge">ธีมสัตว์เลี้ยง</span></h2>
+        <label class="check"><input type="checkbox" id="pgOn" /> เปิดให้น้องโต — ส่งของขวัญครบตามจำนวน น้องตัวใหญ่ขึ้นและเปลี่ยนร่าง (5 ร่าง)</label>
+        <div class="row"><label>โต 1 ร่างทุก <input type="number" id="pgStep" min="1" max="100000" style="width:90px" /> เพชร (กุหลาบ 1 ดอก = 1 เพชร)</label></div>
+        <p class="muted" id="pgHint"></p>
+        <label class="check"><input type="checkbox" id="pgKeep" /> จำร่างข้ามไลฟ์ (ไลฟ์ครั้งหน้าน้องโตต่อจากเดิม ไม่เริ่มร่าง 1 ใหม่)</label>
+        <div class="row"><button class="btn primary" id="pgSave">บันทึก</button><span class="saved" id="pgSaved">บันทึกแล้ว ✓</span></div>
+        <div class="row" style="flex-wrap:wrap;gap:8px"><span class="muted">ลองดูบนหน้าเวที:</span>
+          <button class="btn sm" data-pg="1">ร่าง 1</button><button class="btn sm" data-pg="2">ร่าง 2</button><button class="btn sm" data-pg="3">ร่าง 3</button><button class="btn sm" data-pg="4">ร่าง 4</button><button class="btn sm" data-pg="5">ร่าง 5</button>
+          <button class="btn sm danger" id="pgReset">เริ่มร่าง 1 ใหม่ทุกธีม</button></div>
+        <p class="muted" id="pgNote"></p>
+      </div>
+      <div class="card" data-feature="ai">
+        <h2>🤖 ตัวละคร AI ตอบคอมเมนต์ <span class="badge">ผู้สนับสนุน</span></h2>
+        <p class="muted" id="aiNote"></p>
+        <label class="check"><input type="checkbox" id="aiOn" /> เปิดให้ตัวละครตอบคอมเมนต์ด้วยเสียง (เลือกตอบบางคอมเมนต์ คำถามได้ก่อน)</label>
+        <div class="grid2">
+          <label>ชื่อตัวละคร <input id="aiName" maxlength="30" placeholder="ว่าง = ใช้ชื่อพิธีกรของธีม" /></label>
+          <label>บทบาท <input id="aiRole" maxlength="60" placeholder="เช่น พิธีกรงานวัด, แม่ค้าตลาดนัด" /></label>
+        </div>
+        <label>บุคลิก / วิธีพูด <input id="aiStyle" maxlength="200" placeholder="เช่น ร่าเริง ขี้เล่น พูดลงท้ายด้วย จ้า" style="width:100%" /></label>
+        <div class="row">
+          <label>ตอบคอมเมนต์ทั่วไป <select id="aiChance"><option value="0.1">น้อย (1 ใน 10)</option><option value="0.3">ปานกลาง (1 ใน 3)</option><option value="0.6">บ่อย</option></select></label>
+          <label>เว้นอย่างน้อย <input type="number" id="aiGap" min="8" max="300" style="width:80px" /> วินาที</label>
+          <label class="check"><input type="checkbox" id="aiQ" /> ตอบเฉพาะคำถาม</label>
+        </div>
+        <div class="row"><button class="btn primary" id="aiSave">บันทึก</button><span class="saved" id="aiSaved">บันทึกแล้ว ✓</span></div>
+        <p class="muted">คอมเมนต์ที่ถูกตัวกรองคำต้องห้ามจะไม่ถูกส่งไปตอบ • ไม่ตอบระหว่างเกมคอมเมนต์ • คำตอบสร้างโดย AI อาจผิดพลาดได้ — ระบบส่งแค่ชื่อที่แสดงกับข้อความคอมเมนต์ไปที่ TubHool เพื่อสร้างคำตอบ ไม่เก็บไว้</p>
+      </div>
+      <div class="card" data-feature="shop">
+        <h2>⭐ แต้มคนดู & ร้านแลกแต้ม</h2>
+        <label class="check"><input type="checkbox" id="plPts" /> สะสมแต้ม (คนดูพิมพ์ “แต้ม” เพื่อดูแต้มตัวเอง)</label>
+        <label class="check"><input type="checkbox" id="plShop" /> เปิดร้านแลกแต้ม (พิมพ์ “แลก” ดูรายการ, “แลก ชื่อของ” เพื่อแลก)</label>
+        <table class="tbl" id="plItems"></table>
+        <p class="muted">ได้แต้มจาก: พิมพ์คำสั่ง 1 • กดใจทุก 10 ครั้ง 1 • ของขวัญ 1 เพชร = 2 • ชนะเกม 10 • ติดตาม 5 • แชร์ 3 — แต้มเก็บข้ามไลฟ์ (ในเครื่องนี้)</p>
+        <div class="row"><button class="btn primary" id="plSave">บันทึก</button><span class="saved" id="plSaved">บันทึกแล้ว ✓</span></div>
+      </div>
+      <div class="card">
+        <h2>🏅 แต้มสูงสุด</h2>
+        <ol id="plTop" class="ch-list"></ol>
+        <div class="row"><button class="btn sm" id="plRefresh">รีเฟรช</button><button class="btn sm danger" id="plReset">ล้างแต้มทุกคน</button></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-summary">
+      <h1>ภารกิจ & สรุปไลฟ์</h1>
+      <p class="lead">เป้าหมายร่วมกันของคนดู คะแนนแชมป์เกม และสถิติของแต่ละไลฟ์</p>
+      <div class="card">
+        <h2>📊 ไลฟ์รอบนี้ <span class="badge" id="sumTime"></span></h2>
+        <div id="sumNow" class="sum-grid"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn primary" id="creditsShow">🎬 ขึ้นเครดิตขอบคุณท้ายไลฟ์</button>
+          <button class="btn" id="creditsStop">หยุดเครดิต</button>
+          <button class="btn danger" id="sumNew">เริ่มนับรอบใหม่</button>
+        </div>
+        <p class="muted">กดก่อนปิดไลฟ์สัก 1 นาที: หน้าเวทีจะเลื่อนรายชื่อขอบคุณคนให้ของขวัญ แชมป์เกม ผู้ติดตามใหม่ แบบไตเติลหนัง (ไลฟ์ใหม่จะเริ่มนับรอบใหม่เองตอนเชื่อมต่อ)</p>
+      </div>
+      <div class="card">
+        <h2>🎯 ภารกิจไลฟ์ (เป้าหมายหลายขั้น)</h2>
+        <label class="check"><input type="checkbox" id="msOn" /> แสดงภารกิจใต้หลอดพลังบนหน้าเวที</label>
+        <table class="tbl ms-tbl" id="msTbl"></table>
+        <div class="row" style="margin-top:10px">
+          <button class="btn sm" id="msAdd">+ เพิ่มขั้น</button>
+          <button class="btn primary" id="msSave">บันทึกภารกิจ</button>
+          <button class="btn" id="msReset">เริ่มภารกิจใหม่ตั้งแต่ขั้นแรก</button>
+          <span class="saved" id="msSaved">บันทึกแล้ว ✓</span>
+        </div>
+        <p class="muted" id="msNow"></p>
+        <p class="muted">ครบเป้าแต่ละขั้น → ขึ้นข้อความฉลอง พลุ เสียงพูดขอบคุณ และตัวละครทำท่าที่เลือกไว้ • นับเฉพาะในไลฟ์รอบนี้</p>
+      </div>
+      <div class="card">
+        <h2>🔗 รางวัลชวนแชร์</h2>
+        <label class="check"><input type="checkbox" id="shOn" /> แสดงแถบนับแชร์ใต้หลอดพลัง ครบเป้า → โชว์ใหญ่ทั้งเวที + กำแพงขอบคุณคนแชร์</label>
+        <div class="row" style="margin-top:10px">
+          <label>เป้าแชร์ (ครั้ง)<input id="shTarget" type="number" min="3" max="1000" step="1" style="width:120px" /></label>
+          <button class="btn primary" id="shSave">บันทึก</button>
+          <button class="btn" id="shReset">เริ่มนับแชร์ใหม่</button>
+          <span class="saved" id="shSaved">บันทึกแล้ว ✓</span>
+        </div>
+        <p class="muted">คนแชร์ได้ +20 แต้ม • นับเฉพาะไลฟ์รอบนี้ ครบเป้าแล้วเริ่มนับรอบใหม่</p>
+      </div>
+      <div class="card">
+        <h2>🏮 ฉากเปลี่ยนตามเป้า</h2>
+        <label class="check"><input type="checkbox" id="scOn" /> ฉากค่อย ๆ อลังการขึ้นเมื่อไลค์หรือของขวัญรวมของไลฟ์นี้ครบเป้า (ทุกธีม 3 ขั้น)</label>
+        <div class="grid2" style="margin-top:10px">
+          <label>ขั้น 2 · ไลค์ครบ<input id="scL2" type="number" min="1" step="100" /></label>
+          <label>หรือเพชรครบ<input id="scD2" type="number" min="1" step="10" /></label>
+          <label>ขั้น 3 · ไลค์ครบ<input id="scL3" type="number" min="1" step="100" /></label>
+          <label>หรือเพชรครบ<input id="scD3" type="number" min="1" step="10" /></label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary" id="scSave">บันทึก</button>
+          <span class="saved" id="scSaved">บันทึกแล้ว ✓</span>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <span class="muted">ลองดูบนหน้าเวที:</span>
+          <button class="btn sm" data-sc="1">ขั้น 1</button>
+          <button class="btn sm" data-sc="2">ขั้น 2</button>
+          <button class="btn sm" data-sc="3">ขั้น 3</button>
+          <button class="btn sm" data-sc="0">กลับเป็นอัตโนมัติ</button>
+        </div>
+        <p class="muted" id="scNow"></p>
+        <p class="muted">นับเฉพาะไลฟ์รอบนี้ และเริ่มขั้น 1 ใหม่ทุกครั้งที่เริ่มไลฟ์ใหม่ • ปลดล็อกแล้วหน้าเวทีขึ้นป้ายฉลอง</p>
+      </div>
+      <div class="card">
+        <h2>🏆 แชมป์เกม</h2>
+        <div class="grid2">
+          <div><b>วันนี้</b><ol id="chToday" class="ch-list"></ol></div>
+          <div><b>7 วันล่าสุด</b><ol id="chWeek" class="ch-list"></ol></div>
+        </div>
+        <p class="muted">ตอบควิซ / พิมพ์ไว / ทายเลขถูก = 10 แต้ม • ทีมที่ชนะแข่งทีม = คนละ 3 แต้ม • หน้าเวทีสลับโชว์แชมป์กับอันดับของขวัญทุก 12 วินาที</p>
+        <div class="row"><button class="btn sm danger" id="chResetToday">ล้างคะแนนวันนี้</button><button class="btn sm danger" id="chResetAll">ล้างคะแนนทั้งหมด</button></div>
+      </div>
+      <div class="card">
+        <h2>✂️ ไฮไลต์ไลฟ์รอบนี้</h2>
+        <p class="muted" style="margin-top:0">ช่วงเวลาเด็ด (นาทีที่เท่าไรของไลฟ์) — ใช้หาจุดตัดคลิปจากไฟล์บันทึกไลฟ์ หรือวางเป็นไทม์สแตมป์ในคำอธิบายคลิปย้อนหลัง</p>
+        <ol id="hlList" class="ch-list"></ol>
+        <div class="row"><button class="btn sm" id="hlCopy">📋 คัดลอกเป็นไทม์สแตมป์</button><span class="saved" id="hlSaved">คัดลอกแล้ว ✓</span></div>
+      </div>
+      <div class="card" id="cloudCard" data-feature="cloud">
+        <h2>☁️ บัญชี TubHool</h2>
+        <p class="muted" id="cloudOff" hidden>ใช้ได้ในโปรแกรม Live Stage ที่เข้าสู่ระบบ TubHool แล้ว</p>
+        <div id="cloudOn">
+          <label class="check"><input type="checkbox" id="cloudReports" /> ไลฟ์จบแล้วส่งสรุป (ยอดคนดู หัวใจ เพชร ผู้ติดตามใหม่ ชื่อคนให้ของขวัญ 10 อันดับ) ขึ้นหน้า “รายงานไลฟ์” ของคุณบนเว็บ</label>
+          <label class="check"><input type="checkbox" id="cloudAuto" /> ไลฟ์จบแล้วสำรองการตั้งค่าขึ้นบัญชีอัตโนมัติ (ไม่รวมรหัส/คีย์ใด ๆ)</label>
+          <div class="row" style="margin-top:8px">
+            <button class="btn" id="cloudOpen">📈 ดูรายงานไลฟ์บนเว็บ</button>
+            <button class="btn" id="cloudBackup">⬆️ สำรองการตั้งค่าตอนนี้</button>
+            <button class="btn" id="cloudRestore">⬇️ ดึงการตั้งค่าจากบัญชี</button>
+            <span class="saved" id="cloudSaved">บันทึกแล้ว ✓</span>
+          </div>
+          <p class="muted" id="cloudMsg"></p>
+          <p class="muted">ย้ายเครื่องหรือติดตั้งใหม่: เข้าสู่ระบบบัญชีเดิม แล้วกด “ดึงการตั้งค่าจากบัญชี” — ของเดิมในเครื่องถูกเก็บสำรองไว้ในโฟลเดอร์ backups ก่อนเสมอ</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>📅 ไลฟ์ที่ผ่านมา</h2>
+        <div id="sumPast" class="muted">ยังไม่มี</div>
+      </div>
+    </section>
+
+    <!-- log -->
+    <section class="page" id="page-log">
+      <h1>บันทึก</h1>
+      <p class="lead">เหตุการณ์ล่าสุดจากไลฟ์</p>
+      <div class="card log" id="log"></div>
+    </section>
+  </main>
+
+  <div class="preview">
+    <div class="preview-head"><span>พรีวิวหน้าไลฟ์ (ไม่มีเสียง)</span><a id="openStage2" target="_blank">เปิดแยก ↗</a></div>
+    <div class="preview-frame"><iframe src="stage.html?silent" title="stage preview"></iframe></div>
+  </div>
+</div>
+<div id="silenceAlert"></div>
+<div id="liveAlert"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script type="importmap">{ "imports": { "three": "/vendor/three/build/three.module.js" } }</script>
+<script src="music.js"></script>
+<script src="avatar2d.js"></script>
+<script src="admin.js"></script>
+<script src="music-admin.js"></script>
+</body>
+</html>
+<script src="game-events.js"></script>

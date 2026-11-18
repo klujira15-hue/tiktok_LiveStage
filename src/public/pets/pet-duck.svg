@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="240" height="184" viewBox="-30 -26 60 46"><defs><symbol id="duck" viewBox="-30 -26 60 46">
+<path d="M-19 2 l-7 -7 l3 10z" fill="#ffffff"></path>
+<ellipse cx="0" cy="6" rx="20" ry="11" fill="#ffffff"></ellipse>
+<ellipse cx="-2" cy="4" rx="10" ry="5" fill="#e6edf5"></ellipse>
+<circle cx="12" cy="-9" r="9" fill="#ffffff"></circle>
+<path d="M19 -10 q8 -1 10 2 q-4 3 -10 1z" fill="#ff9f1c"></path>
+<circle cx="14" cy="-11" r="1.6" fill="#2a1f1a"></circle>
+<ellipse cx="0" cy="16" rx="23" ry="3" fill="#ffffff" opacity="0.4"></ellipse>
+</symbol></defs><use href="#duck" x="-30" y="-26" width="60" height="46"></use></svg>

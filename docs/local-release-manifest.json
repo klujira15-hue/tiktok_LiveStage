@@ -1,0 +1,105 @@
+{
+  "version": "1.8.0-local.4",
+  "files": [
+    {
+      "path": "src/server.js",
+      "sha256": "7be503348b49a1b4277794625129ecbb8f8ee13edac6515a39319996daa0a2de"
+    },
+    {
+      "path": "src/local-backup.js",
+      "sha256": "d9090f6c8e69685a430703810faaca9210bc23e80263fc0b56a8dc52b692220b"
+    },
+    {
+      "path": "src/gift-streak.js",
+      "sha256": "911c618fc7a82f913d5fcd30fd3aa71183c28a0e1308bccc9f679dbe63effe28"
+    },
+    {
+      "path": "src/tts.js",
+      "sha256": "047aaac029d24ba5294ec442c53fcf1c50fc260adbc01de720aacfba20e1b225"
+    },
+    {
+      "path": "src/public/app.js",
+      "sha256": "a24dd57173d0a572f0386b5c7e82349b2f90317d25c6d34636fdeeea1844fed5"
+    },
+    {
+      "path": "src/public/admin.js",
+      "sha256": "9cdb100268840633c5c6c4fb19b2fc040cf40f196c02621e9b90e84057ac2e05"
+    },
+    {
+      "path": "src/public/stage.js",
+      "sha256": "135c3e5b11d975f55e8f2984c2d05ce069a7e438c0de85a6623ff2df00662bac"
+    },
+    {
+      "path": "src/public/stage.html",
+      "sha256": "780a0111f62182b6b9366f67d36aae495e2cbe5c0b7220d0b3343a7e0ebce5ab"
+    },
+    {
+      "path": "src/public/classic-effects-data.js",
+      "sha256": "accaf1c654270c450068b510a514be24391b49488108c047dfe47e70668d8a7b"
+    },
+    {
+      "path": "src/public/classic-runtime.js",
+      "sha256": "cf4fc0e36357c62e2afbdf439172c01abe97ec142bc4453a86f986f3b103b15a"
+    },
+    {
+      "path": "src/public/pet3d-engine.js",
+      "sha256": "3a3e6adb6ef3db83fc7173145e1c3cef417e265744f55f5c8ddf438021dc26e0"
+    },
+    {
+      "path": "src/public/music-mini.js",
+      "sha256": "86fe10d180ac272a9792001baaea0a2b7d6e2726ee60fdfd4ffd3aae33c119cf"
+    },
+    {
+      "path": "src/owned-gemini.js",
+      "sha256": "6fe1803cbaa90b23db2311f4533234c22fa7d8457f95dbc94f9aa096481d5b3d"
+    },
+    {
+      "path": "src/public/owned-gemini-ui.js",
+      "sha256": "c4ccf16d9822e4cabb1fc8654ac2c8b1822fb39b1d6124cd86f5a5984441d6a0"
+    },
+    {
+      "path": "src/public/app.html",
+      "sha256": "f6780aeb9b56239b2bddb0db563bf074322a6273e6a868d40a4bbe1c867c3234"
+    },
+    {
+      "path": "src/public/audio-tests/premwadee-natural.json",
+      "sha256": "416ee0f3f3ea851ea691de0be20941f13d9131a4c55942e11cce9f438e533d8a"
+    },
+    {
+      "path": "src/public/audio-tests/premwadee-greeting-v3.wav",
+      "sha256": "44f2dde77a18df8a964c9e20bba4baed3c38a9c87d77933927291aa42ffe29e0"
+    },
+    {
+      "path": "src/public/audio-tests/premwadee-welcome-v3.wav",
+      "sha256": "c3aaa8e92bd38dc2dbb36f41801f7600388c12eeec8a3cf429df2b326d377eaa"
+    },
+    {
+      "path": "src/public/audio-tests/gemini-kore-particles.wav",
+      "sha256": "2483896e2beb851f2ce18c896c6104194ad83330499621dfef88f943a8fac41b"
+    },
+    {
+      "path": "src/public/audio-tests/gemini-kore-particles.json",
+      "sha256": "14532d27b61b5e133020d0481cae8ca58f25f19d522e7a876a0d57855dcd3ffe"
+    },
+    {
+      "path": "src/public/music-admin.js",
+      "sha256": "d0441438651588a2de6520aaf365bbc191a7eac6b66e81401bb7ba0647cb5e74"
+    },
+    {
+      "path": "src/desktop/tiktok-account.cjs",
+      "sha256": "dc65b0a69d25aefd924fde721eddca7111bc8166b02edf3164adbede40509775"
+    },
+    {
+      "path": "src/desktop/main.js",
+      "sha256": "96db2c8f35045db522eb1778abf9ce87cc4e1c2649e0b31b23a3a7c8675472da"
+    },
+    {
+      "path": "src/desktop/preload.js",
+      "sha256": "97e18453c184f9bb856d9d0193c7ba57b613f05b085b32b6c0a7cc6505a2e538"
+    },
+    {
+      "path": "src/desktop/live-manager-output.cjs",
+      "sha256": "8a3d0489bb3b71179fd57c5e0ce49f549e0468df02e6f2f267d9af60b1027b93"
+    }
+  ]
+}

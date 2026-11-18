@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="240" height="288" viewBox="-30 -40 60 72"><defs><symbol id="bun" viewBox="-30 -40 60 72">
+<g stroke="#e4dbe8" stroke-width="1">
+<ellipse cx="-5.5" cy="-24" rx="4.6" ry="13" fill="#fcfcfc" transform="rotate(-12 -5.5 -24)"></ellipse><ellipse cx="5.5" cy="-24" rx="4.6" ry="13" fill="#fcfcfc" transform="rotate(12 5.5 -24)"></ellipse>
+<circle cx="14" cy="20" r="5" fill="#ffffff"></circle>
+<ellipse cx="0" cy="14" rx="14" ry="13" fill="#fcfcfc"></ellipse>
+<circle cx="0" cy="-6" r="12" fill="#fcfcfc"></circle>
+</g>
+<ellipse cx="-5.5" cy="-24" rx="2" ry="9" fill="#ffc2d1" transform="rotate(-12 -5.5 -24)"></ellipse><ellipse cx="5.5" cy="-24" rx="2" ry="9" fill="#ffc2d1" transform="rotate(12 5.5 -24)"></ellipse>
+<ellipse cx="0" cy="16" rx="7" ry="8" fill="#ffffff"></ellipse>
+<ellipse cx="-4.6" cy="-7" rx="2" ry="2.4" fill="#2a1f1a"></ellipse><ellipse cx="4.6" cy="-7" rx="2" ry="2.4" fill="#2a1f1a"></ellipse>
+<circle cx="-4" cy="-8" r="0.7" fill="#ffffff"></circle><circle cx="5.2" cy="-8" r="0.7" fill="#ffffff"></circle>
+<path d="M-1.4 -2.6 h2.8 l-1.4 1.8z" fill="#ff7a90"></path>
+<path d="M0 -0.8 q-1.8 1.8 -3.4 0.6 M0 -0.8 q1.8 1.8 3.4 0.6" stroke="#8a6a7a" stroke-width="0.9" fill="none"></path>
+<ellipse cx="-8" cy="-2" rx="2.4" ry="1.4" fill="#ff8fa3" opacity="0.55"></ellipse><ellipse cx="8" cy="-2" rx="2.4" ry="1.4" fill="#ff8fa3" opacity="0.55"></ellipse>
+<ellipse cx="-6" cy="26" rx="5" ry="3" fill="#ffffff" stroke="#e4dbe8" stroke-width="1"></ellipse><ellipse cx="6" cy="26" rx="5" ry="3" fill="#ffffff" stroke="#e4dbe8" stroke-width="1"></ellipse>
+</symbol></defs><use href="#bun" x="-30" y="-40" width="60" height="72"></use></svg>

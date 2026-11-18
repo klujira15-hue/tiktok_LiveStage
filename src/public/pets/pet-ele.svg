@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="416" height="368" viewBox="-52 -46 104 92"><defs><symbol id="ele" viewBox="-52 -46 104 92">
+<ellipse cx="0" cy="18" rx="30" ry="24" fill="#9aa7bd"></ellipse>
+<rect x="-24" y="30" width="13" height="14" rx="5" fill="#8b98ae"></rect><rect x="11" y="30" width="13" height="14" rx="5" fill="#8b98ae"></rect>
+<ellipse cx="-30" cy="-10" rx="20" ry="24" fill="#a7b3c8"></ellipse><ellipse cx="30" cy="-10" rx="20" ry="24" fill="#a7b3c8"></ellipse>
+<ellipse cx="-30" cy="-9" rx="13" ry="17" fill="#ffc2d1" opacity="0.8"></ellipse><ellipse cx="30" cy="-9" rx="13" ry="17" fill="#ffc2d1" opacity="0.8"></ellipse>
+<circle cx="0" cy="-10" r="24" fill="#a7b3c8"></circle>
+<path d="M-6 0 q-4 24 10 28 q9 2 9 -7" stroke="#a7b3c8" stroke-width="11" fill="none" stroke-linecap="round"></path>
+<path d="M-6 6 h6 M-6 12 h6 M-3 18 h6" stroke="#8b98ae" stroke-width="1.2"></path>
+<circle cx="-9" cy="-13" r="3" fill="#1a1d2a"></circle><circle cx="9" cy="-13" r="3" fill="#1a1d2a"></circle><circle cx="-8" cy="-14.2" r="1" fill="#ffffff"></circle><circle cx="10" cy="-14.2" r="1" fill="#ffffff"></circle>
+<ellipse cx="-15" cy="-3" rx="4" ry="2.4" fill="#ff8fa3" opacity="0.6"></ellipse><ellipse cx="15" cy="-3" rx="4" ry="2.4" fill="#ff8fa3" opacity="0.6"></ellipse>
+<path d="M-18 -30 q18 -12 36 0 l-4 6 q-14 -8 -28 0z" fill="#d6332a"></path><path d="M-16 -28 q16 -10 32 0" stroke="#ffd166" stroke-width="2" fill="none"></path><circle cx="0" cy="-36" r="3" fill="#ffd166"></circle>
+</symbol></defs><use href="#ele" x="-52" y="-46" width="104" height="92"></use></svg>

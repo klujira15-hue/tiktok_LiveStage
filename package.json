@@ -1,0 +1,19 @@
+{
+  "name": "tiktok-livestage-custom",
+  "version": "1.8.0-local.4",
+  "private": true,
+  "description": "Editable working copy of the user-supplied LiveStage 1.8.0 package",
+  "main": "tools/dev-main.cjs",
+  "scripts": {
+    "start": "node tools/launch.cjs",
+    "verify": "node tools/verify-clone.cjs",
+    "runtime:prepare": "node tools/launch.cjs --prepare-only",
+    "verify:local": "node tools/verify-local.cjs",
+    "test:flow": "node tools/current-flow-regression.cjs",
+    "test:games": "node tools/minigame-regression.cjs",
+    "test:gemini": "node tools/owned-gemini-unit.cjs"
+  },
+  "devDependencies": {
+    "electron": "44.9.3"
+  }
+}

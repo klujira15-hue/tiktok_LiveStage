@@ -1,0 +1,24 @@
+/* IBM Plex Sans Thai (SIL OFL — ดู OFL.txt) ชุดเดียวกับเว็บ tubhool.com — ใส่ไว้ในโปรแกรม ไม่ต้องโหลดจากเน็ต */
+@font-face { font-family: "IBM Plex Sans Thai"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("plex-thai-thai-400.woff2") format("woff2"); unicode-range: U+02D7,U+0303,U+0331,U+0E01-0E5B,U+200C-200D,U+25CC; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-style: normal; font-weight: 400; font-display: swap;
+  src: url("plex-thai-latin-400.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("plex-thai-thai-500.woff2") format("woff2"); unicode-range: U+02D7,U+0303,U+0331,U+0E01-0E5B,U+200C-200D,U+25CC; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-style: normal; font-weight: 500; font-display: swap;
+  src: url("plex-thai-latin-500.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("plex-thai-thai-600.woff2") format("woff2"); unicode-range: U+02D7,U+0303,U+0331,U+0E01-0E5B,U+200C-200D,U+25CC; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-style: normal; font-weight: 600; font-display: swap;
+  src: url("plex-thai-latin-600.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-style: normal; font-weight: 700; font-display: swap;
+  src: url("plex-thai-thai-700.woff2") format("woff2"); unicode-range: U+02D7,U+0303,U+0331,U+0E01-0E5B,U+200C-200D,U+25CC; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-style: normal; font-weight: 700; font-display: swap;
+  src: url("plex-thai-latin-700.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+/* IBM Plex Sans Thai draws ฬ without its tall stroke, so "นาฬิกา" reads like "นาผิกา". This face takes over
+   ฬ from a font already on the device (Windows / Apple / Android). The marks are in the range too so a whole
+   ฬ+vowel cluster switches font together; every other cluster still matches Plex first (its base letter isn't here). */
+@font-face { font-family: "Thai LoChula"; font-weight: 400 500; unicode-range: U+0E2C,U+0E31,U+0E34-0E3A,U+0E47-0E4E;
+  src: local("Leelawadee UI"), local("LeelawadeeUI"), local("Thonburi"), local("Noto Sans Thai"), local("NotoSansThai-Regular"); }
+@font-face { font-family: "Thai LoChula"; font-weight: 600 700; unicode-range: U+0E2C,U+0E31,U+0E34-0E3A,U+0E47-0E4E;
+  src: local("Leelawadee UI Bold"), local("LeelawadeeUI-Bold"), local("Thonburi Bold"), local("Thonburi-Bold"),

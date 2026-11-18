@@ -1,0 +1,3 @@
+Pet theme (pet3d): the pets are built in code (public/pet3d-chibi.js) — no model files.
+pet-bg-day.jpg — background image supplied by the Live Stage owner.
+Optional backgrounds (drop in this folder, 1080x1920 JPG): pet-bg-day.jpg, pet-bg-dusk.jpg, pet-bg-night.jpg

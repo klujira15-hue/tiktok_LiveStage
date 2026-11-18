@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="224" height="208" viewBox="-28 -30 56 52"><defs><symbol id="dkl" viewBox="-28 -30 56 52">
+<ellipse cx="-2" cy="8" rx="22" ry="15" fill="#ffd84d"></ellipse><path d="M-22 4 l-6 -6 l2 9z" fill="#ffd84d"></path>
+<ellipse cx="-4" cy="6" rx="10" ry="6" fill="#ffc21a"></ellipse>
+<circle cx="8" cy="-10" r="12" fill="#ffd84d"></circle><path d="M6 -21 q2 -6 6 -5 q-3 1 -2 5" fill="#ffc21a"></path>
+<ellipse cx="21" cy="-8" rx="8" ry="3.6" fill="#ff9f1c"></ellipse>
+<circle cx="11" cy="-12" r="2" fill="#2a1f1a"></circle><circle cx="11.6" cy="-12.6" r="0.6" fill="#ffffff"></circle>
+<ellipse cx="7" cy="-5" rx="3" ry="1.8" fill="#ff8fa3" opacity="0.6"></ellipse>
+<ellipse cx="0" cy="20" rx="24" ry="3" fill="#ffffff" opacity="0.35"></ellipse>
+</symbol></defs><use href="#dkl" x="-28" y="-30" width="56" height="52"></use></svg>

@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TikTok LiveStage — Local</title>
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="theme-promo.css">
+<style>
+#login,#p-unlock,[data-ext],#recheck,#acUnlock,#acLogout {display:none!important}
+</style></head>
+<body>
+<!-- ============================== เข้าสู่ระบบ -->
+<section id="login" class="screen" hidden>
+  <div class="login-wrap">
+    <div class="login-side">
+      <div class="brand"><svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><use href="#tlogo"></use></svg><span>TikTok LiveStage</span><span class="pill">Live Stage</span></div>
+      <span class="tag gold">ฟรีสำหรับสมาชิก · Windows &amp; Mac</span>
+      <div class="hero"><div>ไลฟ์ TikTok ให้</div><div class="hl">คนดูเล่นด้วยได้</div></div>
+      <p class="muted">ฉากเคลื่อนไหว ตัวละครพูดขอบคุณ เกมคอมเมนต์ — ใส่ลิงก์เดียวใน TikTok LIVE Studio ก็ใช้ได้เลย</p>
+      <div class="bento">
+        <div class="b red"><small>ฉากไลฟ์</small><b>8 ธีม</b><span>คอนเสิร์ต ไหว้ศาล ลอยกระทง …</span></div>
+        <div class="b green"><small>ตัวละคร</small><b>2D / 3D</b><span>โบกมือ ไหว้ ขอบคุณ พูดตอบ</span></div>
+        <div class="b blue"><small>เกมคอมเมนต์</small><b>อัตโนมัติ</b><span>ควิซ พิมพ์ไว ทายเลข</span></div>
+        <div class="b purple"><small>ภารกิจไลฟ์</small><b>❤ 1,000</b><span>ครบเป้า ฉลองทั้งไลฟ์</span></div>
+      </div>
+    </div>
+    <div class="login-main">
+      <h1>เข้าสู่ระบบ</h1>
+      <p class="muted">ใช้บัญชีเดียวกับเว็บ <b class="ink">tubhool.com</b> — สมาชิกใช้ฟรี 1 ธีม ผู้สนับสนุน TubHool ปลดลิมิตทุกธีม</p>
+      <button class="btn red big" id="loginBtn" type="button">เข้าสู่ระบบด้วย TubHool <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ext"></use></svg></button>
+      <a class="btn ghost big" id="registerLink" href="#" data-ext="/auth/register">ยังไม่มีบัญชี? สมัครฟรี</a>
+      <div class="steps">
+        <div><span>1</span>กดปุ่มด้านบน เบราว์เซอร์จะเปิดหน้า tubhool.com</div>
+        <div><span>2</span>ล็อกอินตามปกติ แล้วกด “อนุญาต”</div>
+        <div><span>3</span>กลับมาที่โปรแกรมเองอัตโนมัติ</div>
+      </div>
+      <p class="msg" id="loginMsg" role="status"></p>
+      <div class="foot muted"><span id="verText">Live Stage</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== โปรแกรม -->
+<section id="main" class="screen" hidden>
+  <nav class="side" aria-label="เมนูหลัก">
+    <div class="brand small"><svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><use href="#tlogo"></use></svg><div><div>TikTok LiveStage</div><small>Live Stage <button class="ver" id="sideVer" type="button" title="มีอะไรใหม่"></button></small></div></div>
+    <button class="nav on" data-go="home" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>หน้าหลัก</button>
+    <button class="nav" data-go="preview" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10.5 9.5v5l4-2.5z"/></svg>พรีวิว &amp; ทดสอบ<span class="nbdg lockb" data-live-lock hidden title="ปิดปุ่มทดสอบระหว่างไลฟ์จริง">🔒</span></button>
+    <button class="nav" data-go="themes" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>ธีม</button>
+    <button class="nav" data-go="widgets" data-feature="widgets" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><rect x="5" y="13" width="7" height="3" rx="1"/><rect x="15" y="8" width="4" height="8" rx="1"/></svg>วิดเจ็ตไลฟ์เกม</button>
+    <button class="nav" data-go="adm:avatar" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="4"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>ตัวละคร</button>
+    <button class="nav" data-go="adm:live" data-feature="games" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="6" r="3"/><path d="M12 9v6M4 15h16v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/></svg>เกมในไลฟ์</button>
+    <button class="nav" data-go="adm:games" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="12" rx="4"/><path d="M7 13h4M9 11v4"/></svg>เกมคอมเมนต์</button>
+    <button class="nav" data-go="adm:custom" data-feature="custom" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.6-.9 1.2-1.8-.5-1-.1-2.2 1.1-2.2H17a4 4 0 0 0 4-4c0-5.5-4-10-9-10z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/></svg>สร้างธีมเอง</button>
+    <button class="nav" data-go="adm:brk" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>รอเริ่ม / พักเบรก</button>
+    <button class="nav" data-go="adm:cf" data-plan="supporter" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>ขายของ (CF)</button>
+    <button class="nav" data-go="adm:play" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6-5.3-3-5.3 3 1.2-6L3.4 9.3l6-.7z"/></svg>คำสั่ง &amp; แต้มคนดู</button>
+    <button class="nav" data-go="adm:summary" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>ภารกิจ &amp; สรุปไลฟ์</button>
+    <button class="nav" data-go="adm:music" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>เพลงในไลฟ์<span class="nbdg cr" title="ใช้เฉพาะเพลงที่มีสิทธิ์">©</span></button>
+    <button class="nav" data-go="adm:stage" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></svg>เสียง ดนตรี หน้าจอ</button>
+    <button class="nav" data-go="adm:gifts" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8c-2-4-6-4-6-1s6 1 6 1 6 2 6-1-4-3-6 1"/></svg>ของขวัญ</button>
+    <button class="nav" data-go="adm:safety" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>ความปลอดภัย<span class="nbdg warn" id="nbSafe" hidden title="ยังไม่ได้เปิดโหมดปลอดภัย">!</span></button>
+    <button class="nav" data-go="adm:test" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/></svg>ทดสอบ<span class="nbdg lockb" data-live-lock hidden title="ปิดปุ่มทดสอบระหว่างไลฟ์จริง">🔒</span></button>
+    <button class="nav" data-go="adm:log" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 8h6M9 12h6M9 16h4"/></svg>บันทึก</button>
+    <div class="grow"></div>
+    <div class="acct">
+      <div class="who"><div class="av" id="acAv" aria-hidden="true">?</div><div><div id="acName">-</div><small id="acPlan">-</small></div></div>
+      <button class="btn yellow block" id="acUnlock" type="button" data-go="unlock"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-heart"></use></svg>ปลดลิมิตทุกธีม</button>
+      <div class="row" style="justify-content:space-between"><a class="link" href="/api/support-bundle" download>บันทึกไฟล์แจ้งปัญหา</a><button class="link" id="acLogout" type="button">ออกจากระบบ</button></div>
+      <button class="acver" id="acVer" type="button"></button>
+    </div>
+  </nav>
+
+  <main class="content">
+    <div class="banner" id="offlineBanner" hidden></div>
+
+    <!-- หน้าหลัก -->
+    <div class="page" id="p-home">
+      <div class="head"><h1>พร้อมไลฟ์หรือยัง</h1><span class="status" id="liveStatus"><i></i><span>-</span></span></div>
+      <div class="grid2">
+        <div class="card blue">
+          <small class="k">ขั้นที่ 1</small>
+          <h2 id="ttTitle">บัญชี TikTok ที่จะไลฟ์</h2>
+          <div class="seg" role="radiogroup" aria-label="แพลตฟอร์มที่ไลฟ์"><button type="button" role="radio" data-pf="tiktok">TikTok</button><button type="button" role="radio" data-pf="youtube" data-feature="youtube">YouTube</button></div>
+          <label for="ttUser" class="lbl" id="ttLbl">ชื่อผู้ใช้ TikTok</label>
+          <div class="row"><input id="ttUser" type="text" placeholder="@ชื่อของคุณ" autocomplete="off"><button class="btn red" id="ttConnect" type="button">เชื่อมต่อ</button></div>
+          <div class="safe-ok" id="safeOk" hidden>🟢 <b>โหมดปลอดภัยเปิดอยู่</b> <span>— ปิดตัวเลข • ไม่อ่านคอมเมนต์ • กรองคำ</span></div>
+          <p class="hint" id="ttHint">กดเชื่อมต่อหลังเริ่มไลฟ์ใน LIVE Studio — ถ้าหลุดระบบจะต่อกลับให้เอง • <a href="#" class="link" id="wizOpen">เปิดตัวช่วยตั้งค่าอีกครั้ง</a></p>
+          <div class="live-tips" aria-labelledby="tipsTitle">
+            <h3 id="tipsTitle"><span aria-hidden="true">💡</span> ไลฟ์ยังไง ไม่ให้โดนจำกัดการมองเห็น</h3>
+            <ul>
+              <li><i aria-hidden="true">🙋</i><div><b>มีคนจริงอยู่ในไลฟ์</b><span>เปิดกล้องมุมจอ หรือพูดคุยตลอด — จอการ์ตูนเงียบ ๆ อาจถูกมองว่าไม่ใช่ไลฟ์สด</span></div></li>
+              <li><i aria-hidden="true">💬</i><div><b>คุยกับคนดู</b><span>ทักชื่อ ตอบคอมเมนต์ อย่าปล่อยจอวนเฉย ๆ นาน ๆ</span></div></li>
+              <li><i aria-hidden="true">🚫</i><div><b>ไม่ปลอมยอด</b><span>ไม่กดทดสอบหรือเดโมระหว่างไลฟ์ ไม่แต่งว่ามีคนส่งของขวัญ</span></div></li>
+              <li><i aria-hidden="true">🎁</i><div><b>ไม่เร่งขอของขวัญ</b><span>ไม่บังคับ ไม่ทำเป็นพนันหรือชิงโชค</span></div></li>
+              <li><i aria-hidden="true">🧪</i><div><b>ไม่เปิด-ปิดไลฟ์ถี่ ๆ เพื่อลอง</b><span>อยากลองธีม ใช้หน้า <a href="#" class="link" data-go="preview">พรีวิว &amp; ทดสอบ</a> แทน</span></div></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card purple">
+          <small class="k">ขั้นที่ 2</small>
+          <h2>ลิงก์หน้าเวที</h2>
+          <p class="hint">ใส่ใน TikTok LIVE Studio → เพิ่มแหล่ง “Link” แล้ววางลิงก์นี้</p>
+          <div class="row"><code id="stageLink">-</code><button class="btn lav" id="copyLink" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span>คัดลอก</span></button></div>
+          <div class="row wrap"><button class="btn yellow" type="button" id="openPreview"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10.5 9.5v5l4-2.5z"/></svg>เปิดหน้าต่างพรีวิว</button><button class="btn lav" type="button" id="openControl" disabled title="เชื่อมต่อไลฟ์ก่อน ถึงจะเปิดห้องควบคุมได้"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9 4v16M13 9h5M13 13h5M13 17h3"/></svg>เปิดห้องควบคุมไลฟ์</button></div>
+          <p class="hint">พรีวิว: หน้าต่างเล็กลอยบนสุด ไว้ดูหน้าเวทีและทดสอบระหว่างไลฟ์ (ปิดเสียง) • ห้องควบคุม: <span id="ctlHint">เชื่อมต่อไลฟ์ก่อนถึงจะเปิดได้ — เด้งขึ้นเองตอนเชื่อมต่อ</span></p>
+          <ul class="setup">
+            <li><b>Custom resolution:</b> เปิด แล้วใส่ <b>W 1080 × H 1920</b> กด Apply → กดลูกศร ˅ ข้างปุ่มปรับขนาด (⤢) ในแถบเครื่องมือด้านบน แล้วเลือก <b>Fill</b> ภาพจะเต็มจอไม่มีขอบ (อย่าเลือก Stretch ภาพจะยืดผิดสัดส่วน)</li>
+            <li><b>Turn on sound:</b> ขึ้นกับการตั้งค่าเสียงของ LIVE Studio แต่ละเครื่อง — ถ้า<b>เสียงซ้อนสองชั้น</b>ให้ลอง<b>ปิด</b> ถ้า<b>ไม่มีเสียงในไลฟ์</b>ให้ลอง<b>เปิด</b> (ลองสลับแล้วฟังจากมือถืออีกเครื่อง)</li>
+            <li><b>Always keep active:</b> เปิด • กด Apply แล้วคลิกขวาที่ภาพ → Interact → คลิกในจอ 1 ครั้ง (เปิดเสียง)</li>
+            <li>ห้ามเปิดหน้าเวทีซ้อนกันหลายที่ (เสียงจะพูดซ้อน)</li>
+          </ul>
+        </div>
+      </div>
+      <div class="card pq" id="pqCard">
+        <div class="head"><div><small class="k pink">หน้าเวที</small><h2>รูปโปรไฟล์คนดู</h2></div>
+          <div class="seg" role="radiogroup" aria-label="รูปโปรไฟล์คนดู">
+            <button type="button" role="radio" data-pq="small">เล็ก ข้างชื่อ</button><button type="button" role="radio" data-pq="big">ใหญ่ เหนือหัว</button><button type="button" role="radio" data-pq="bigname">ใหญ่ + ชื่อ</button><button type="button" role="radio" data-pq="off">ไม่แสดง</button>
+          </div>
+        </div>
+        <p class="hint" id="pqHint"></p>
+      </div>
+      <div class="card mm" id="mmCard">
+        <div class="head"><div><small class="k pink">เพลงในไลฟ์</small><h2 id="mmTitle">-</h2></div><span class="mm-cr" title="TikTok อาจปิดเสียง/ตัดไลฟ์ถ้าเปิดเพลงที่มีลิขสิทธิ์">© ใช้เฉพาะเพลงที่มีสิทธิ์</span><button class="btn ghost" type="button" data-go="adm:music">จัดการเพลง</button></div>
+        <div class="mm-bar"><i id="mmBar"></i></div>
+        <div class="row wrap mm-row">
+          <button class="mm-c" type="button" data-mm="prev" title="เพลงก่อนหน้า">⏮</button><button class="mm-c big" type="button" data-mm="toggle" id="mmPlay" title="เล่น / หยุดชั่วคราว">▶</button><button class="mm-c" type="button" data-mm="next" title="เพลงถัดไป">⏭</button><button class="mm-c" type="button" data-mm="stop" title="หยุด">⏹</button>
+          <label class="mm-vol"><span>🔊</span><input type="range" id="mmVol" min="0" max="100" aria-label="เสียงเพลงในไลฟ์"><b id="mmVolV"></b></label>
+        </div>
+        <p class="hint" id="mmNote"></p>
+      </div>
+      <div class="grid-wide">
+        <div class="card">
+          <div class="head"><div><small class="k gold">ตัวช่วย</small><h2>คำแนะนำก่อนไลฟ์</h2></div><span class="tag gold" id="preCount">-</span></div>
+          <p class="hint">ระบบดูให้อัตโนมัติ — ไม่จำเป็นต้องทำครบทุกข้อ ใช้ไล่ดูเวลาภาพหรือเสียงมีปัญหา</p>
+          <div id="preList" class="pre"></div>
+          <div class="row wrap" style="margin-top:12px">
+            <button class="btn ghost" type="button" id="preTts">🔊 ทดสอบเสียง</button>
+            <button class="btn ghost" type="button" id="preIdentify">🔢 ขึ้นเลขบนหน้าเวที</button>
+            <button class="btn ghost" type="button" data-go="adm:pre">ดูทั้งหมด</button>
+          </div>
+        </div>
+        <div class="card red">
+          <small class="k red">ธีมที่ใช้อยู่</small>
+          <div class="thumb"><img id="curThumb" alt=""></div>
+          <div class="big" id="curThemeName">-</div>
+          <button class="btn red block" type="button" data-go="themes">เปลี่ยนธีม</button>
+        </div>
+      </div>
+    <details class="note limits" id="limits">
+      <summary>ข้อจำกัดการใช้งาน (อ่านก่อนไลฟ์)</summary>
+      <ul>
+        <li><b>เสียงพูดอัตโนมัติ</b> ใช้บริการอ่านออกเสียงฟรีของ Microsoft Edge ซึ่งไม่ใช่บริการทางการสำหรับโปรแกรมอื่น — อาจช้า ใช้ไม่ได้ชั่วคราว หรือเลิกให้บริการได้ทุกเมื่อ ถ้าใช้ไม่ได้ระบบจะสลับไปใช้เสียงของเครื่องให้เอง</li>
+        <li><b>การอ่านคอมเมนต์/ของขวัญจาก TikTok</b> ใช้ตัวเชื่อมที่ไม่ใช่ API ทางการของ TikTok — ถ้า TikTok เปลี่ยนระบบอาจใช้ไม่ได้จนกว่าจะอัปเดตโปรแกรม (รุ่น Local ปิดการอัปเดตจากผู้พัฒนาเดิม)</li>
+        <li>รุ่น Local ไม่ใช้บัญชีผู้พัฒนาเดิม • ใช้อินเทอร์เน็ตเฉพาะการเชื่อมต่อไลฟ์และบริการที่เลือกใช้</li>
+        <li>รุ่น Local นี้ไม่ได้เกี่ยวข้องหรือรับรองโดย TikTok — ผู้ไลฟ์ต้องทำตามกฎชุมชนของ TikTok เอง</li>
+      </ul>
+    </details>
+    </div>
+
+    <!-- พรีวิว & ทดสอบ -->
+    <div class="page" id="p-preview" hidden>
+      <div class="pv-wrap">
+        <section class="pv-left" aria-label="พรีวิวหน้าเวที">
+          <div class="head"><h1>พรีวิวหน้าเวที</h1><span class="status"><svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><path d="M11 5L6 9H2v6h4l5 4zM22 9l-6 6M16 9l6 6"/></svg>ปิดเสียง</span></div>
+          <div class="pv-screen"><iframe id="pvFrame" title="พรีวิวหน้าเวที (ปิดเสียง)" tabindex="-1"></iframe></div>
+          <div class="row">
+            <button class="btn ghost grow1" type="button" id="pvReload">โหลดใหม่</button>
+            <button class="btn ghost grow1" type="button" id="pvPop">แยกเป็นหน้าต่าง ↗</button>
+          </div>
+        </section>
+        <section class="pv-right" aria-label="ทดสอบ">
+          <div class="live-lock" id="pvLock" hidden role="alert"><div class="big">🔒</div><h3>ปิดปุ่มทดสอบระหว่างไลฟ์จริง</h3><p>ของขวัญ เพชร กุหลาบ คอมเมนต์ทดสอบจะขึ้นในไลฟ์ให้คนดูเห็น — TikTok อาจมองว่าเป็นของขวัญปลอม/หลอกลวง เสี่ยงโดนแบน</p><button class="btn ghost" type="button" data-go="home">ตัดการเชื่อมต่อก่อน แล้วค่อยทดสอบ</button></div>
+          <div><h2>ทดสอบโดยไม่ต้องไลฟ์</h2><p class="hint">ขึ้นบนหน้าเวทีจริงเหมือนคนดูทำ — ระหว่างไลฟ์จริงคนดูก็เห็นด้วย ใช้ตอนยังไม่เริ่มไลฟ์ดีที่สุด</p></div>
+          <div class="card blue">
+            <label class="lbl" for="pvName">ชื่อคนดูทดสอบ</label>
+            <input id="pvName" type="text" value="น้องเมย์ 🌸" maxlength="30">
+            <label class="lbl" for="pvMsg">คอมเมนต์</label>
+            <div class="row"><input id="pvMsg" type="text" value="สวัสดีค่ะ มาแล้วจ้า" maxlength="100"><button class="btn red" type="button" id="pvSend">ส่ง</button></div>
+            <div class="row wrap" id="pvQuick">
+              <button class="chipbtn" type="button" data-t="join">👋 เข้ามา</button>
+              <button class="chipbtn" type="button" data-t="like">❤ กดหัวใจ</button>
+              <button class="chipbtn" type="button" data-t="follow">➕ ติดตาม</button>
+              <button class="chipbtn" type="button" data-t="share">↗ แชร์</button>
+              <button class="chipbtn" type="button" data-t="laugh">😂 555</button>
+            </div>
+          </div>
+          <div class="card red">
+            <small class="k red">ส่งของขวัญทดสอบ (ของธีมนี้)</small>
+            <div class="pv-gifts" id="pvGifts"></div>
+          </div>
+          <div class="row wrap">
+            <button class="btn ghost" type="button" id="pvCrowd">+10 คนดูจำลอง</button>
+            <button class="btn ghost" type="button" id="pvDemo">▶ โหมดเดโมอัตโนมัติ</button>
+            <button class="btn ghost" type="button" id="pvGame">🎮 เริ่มเกมทดสอบ</button>
+            <button class="btn ghost" type="button" id="pvClear">ล้างฉาก</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ธีม -->
+    <div class="page" id="p-themes" hidden>
+      <div class="head"><h1>เลือกธีม</h1></div>
+      <div class="note gold" id="themeNote" hidden></div>
+      <div id="themeHero" hidden></div>
+      <div class="themes" id="themeGrid"></div>
+    </div>
+
+    <!-- วิดเจ็ต (ไลฟ์เกม / จอแนวนอน) -->
+    <div class="page" id="p-widgets" hidden>
+      <div class="head"><h1>วิดเจ็ตไลฟ์เกม</h1></div>
+      <p class="hint">ไลฟ์เกมหรือไลฟ์แนวนอนที่ไม่อยากใช้ฉากเต็มจอ: ใช้วิดเจ็ตพื้นโปร่งใสวางทับภาพเกมแทน — ใน LIVE Studio เพิ่มแหล่ง <b>Link</b> ทีละอัน วางลิงก์ แล้วลากขนาด/ตำแหน่งตามชอบ (ใน OBS ใช้ Browser source)</p>
+      <div class="wgrid" id="wgrid"></div>
+      <div class="note">
+        <b>ตัวเลือกต่อท้ายลิงก์:</b> <code>&amp;scale=1.5</code> ขยายตัวหนังสือ • <code>&amp;tts=1</code> ให้ Alert พูดขอบคุณ (อย่าเปิดพร้อมหน้าเวทีเต็ม เสียงจะซ้อน) • <code>&amp;min=10</code> Alert เฉพาะของขวัญตั้งแต่ 10 เพชร • <code>&amp;n=5</code> จำนวนแถว (แชท/อันดับ)<br>
+        ถ้าพื้นหลังไม่โปร่งใสใน LIVE Studio ให้ลองตั้ง Custom resolution ของแหล่ง Link ให้พอดีกับวิดเจ็ต หรือใช้ OBS ส่งภาพเข้า LIVE Studio
+      </div>
+    </div>
+
+    <!-- ปลดลิมิต -->
+    <div class="page" id="p-unlock" hidden>
+      <div class="dialog">
+        <div class="head"><div><h1>สนับสนุน TubHool <span class="tag redfill">ปลดลิมิตทุกธีม</span></h1>
+          <p class="muted">สนับสนุนครั้งเดียว ได้ทั้งเว็บ tubhool.com ไม่จำกัด และ Live Stage ครบทุกธีม — เงินสนับสนุนช่วยจ่ายค่าเซิร์ฟเวอร์</p></div></div>
+        <div class="pr-banner" id="prBanner" hidden></div>
+        <div class="tiers" id="tiers"></div>
+        <div class="pr-loyal" id="prLoyal" hidden></div>
+        <div class="note">
+          <b>สมาชิกฟรีได้:</b> 1 ธีม (เปลี่ยนได้วันละครั้ง) • ตัวละคร เกม ภารกิจ ครบ • มีชื่อ TubHool เล็ก ๆ ที่มุมจอ
+        </div>
+        <div class="row wrap">
+          <a class="btn red big grow1" id="donateBtn" href="#" data-ext="/donate/">ไปหน้าสนับสนุน (สแกน PromptPay) <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ext"></use></svg></a>
+          <button class="btn ghost big grow1" id="recheck" type="button">สนับสนุนแล้ว — ตรวจสถานะใหม่</button>
+        </div>
+        <p class="hint" id="recheckMsg" role="status">จ่ายผ่านพร้อมเพย์บนเว็บ tubhool.com แล้วปลดลิมิตให้ทันที (บัญชีเดียวกับที่ล็อกอินโปรแกรมนี้) — กลับมากด “ตรวจสถานะใหม่” • ถ้าหมดอายุระหว่างไลฟ์ ไลฟ์รอบนั้นใช้ต่อได้จนจบ</p>
+      </div>
+    </div>
+
+    <!-- หน้าตั้งค่าละเอียด (หลังบ้านเดิม) -->
+    <div class="page frame" id="p-adm" hidden><iframe id="admFrame" title="ตั้งค่า"></iframe></div>
+  </main>
+</section>
+
+<div class="toast" id="toast" role="status"></div>
+
+<!-- ตัวช่วยตั้งค่าครั้งแรก -->
+<div class="wiz" id="wiz" hidden role="dialog" aria-modal="true" aria-labelledby="wizTitle">
+  <div class="wiz-box">
+    <div class="wiz-top"><svg class="logo" aria-hidden="true"><use href="#tlogo"></use></svg><b>เริ่มใช้ Live Stage</b><span class="grow1"></span><span class="wiz-dots" id="wizDots"></span><button class="link" type="button" id="wizSkip">ข้ามไปก่อน</button></div>
+    <div class="wiz-step" data-s="1">
+      <small class="k">ขั้นที่ 1 จาก 4</small>
+      <h2 id="wizTitle">ไลฟ์ด้วยบัญชี TikTok ไหน</h2>
+      <p class="hint">ใส่ชื่อผู้ใช้ (ที่ขึ้นต้นด้วย @) — ใช้อ่านคอมเมนต์ ของขวัญ และหัวใจจากไลฟ์ของคุณ</p>
+      <input id="wizUser" type="text" placeholder="@ชื่อของคุณ" autocomplete="off">
+    </div>
+    <div class="wiz-step" data-s="2" hidden>
+      <small class="k">ขั้นที่ 2 จาก 4</small>
+      <h2>เลือกฉากหน้าไลฟ์</h2>
+      <p class="hint" id="wizThemeHint">กดเลือกธีมที่ชอบ — เปลี่ยนทีหลังได้ที่เมนู “ธีม”</p>
+      <div class="wiz-themes" id="wizThemes"></div>
+    </div>
+    <div class="wiz-step" data-s="3" hidden>
+      <small class="k">ขั้นที่ 3 จาก 4</small>
+      <h2>ใส่หน้าเวทีใน TikTok LIVE Studio</h2>
+      <div class="row"><code id="wizLink">-</code><button class="btn lav" type="button" id="wizCopy">คัดลอกลิงก์</button></div>
+      <ol class="wiz-list">
+        <li>เปิด LIVE Studio → <b>เพิ่มแหล่งที่มา</b> → เลือก <b>Link</b> แล้ววางลิงก์</li>
+        <li>เปิด <b>Custom resolution</b> ใส่ <b>1080 × 1920</b> กด Apply แล้วเลือก <b>Fill</b> (ลูกศร ˅ ข้างปุ่ม ⤢ บนแถบเครื่องมือ)</li>
+        <li>เปิด <b>Always keep active</b> → Apply → คลิกขวาที่ภาพ → <b>Interact</b> → คลิกในจอ 1 ครั้งเพื่อเปิดเสียง</li>
+      </ol>
+      <p class="hint">ยังไม่ทำตอนนี้ก็ได้ — ลิงก์อยู่ที่หน้าหลักเสมอ</p>
+    </div>
+    <div class="wiz-step" data-s="4" hidden>
+      <small class="k">ขั้นที่ 4 จาก 4</small>
+      <h2>ลองเล่นดูก่อนไลฟ์จริง</h2>
+      <p class="hint">กดปุ่มด้านล่าง แล้วดูในหน้าต่างพรีวิว (หรือใน LIVE Studio) ว่ามีคนดูเดินเข้ามาและของขวัญเด้งขึ้น</p>
+      <div class="row wrap">
+        <button class="btn yellow" type="button" id="wizPreview">เปิดหน้าต่างพรีวิว</button>
+        <button class="btn ghost" type="button" id="wizCrowd">+10 คนดูจำลอง</button>
+        <button class="btn ghost" type="button" id="wizGift">ส่งของขวัญทดสอบ</button>
+      </div>
+      <p class="hint">พร้อมไลฟ์เมื่อไร: เริ่มไลฟ์ใน LIVE Studio แล้วกด <b>เชื่อมต่อ</b> ที่หน้าหลัก</p>
+    </div>
+    <div class="wiz-nav"><button class="btn ghost" type="button" id="wizBack">ย้อนกลับ</button><span class="grow1"></span><button class="btn red" type="button" id="wizNext">ถัดไป</button></div>
+  </div>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="tlogo" viewBox="0 0 48 48"><rect width="48" height="48" rx="13" fill="#e8453c"/><g fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11V29Q21 37 29 37H32"/><path d="M13.5 19.5H30"/></g><circle cx="36" cy="12" r="4.5" fill="#ffd166"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+</svg>
+<!-- มีอะไรใหม่ (หลังอัปเดต / กดเลขเวอร์ชัน) -->
+<div class="wn-back" id="wn" hidden>
+  <div class="wn" role="dialog" aria-modal="true" aria-labelledby="wnTitle">
+    <div class="wn-head">
+      <div class="row" style="gap:14px">
+        <div class="wn-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l2.4 5.2 5.6.6-4.2 3.8 1.2 5.6L12 15.4 7 18.2l1.2-5.6L4 8.8l5.6-.6z"/></svg></div>
+        <div><div class="wn-title" id="wnTitle"></div><div class="muted" id="wnSub"></div></div>
+      </div>
+      <button class="wn-x" id="wnClose" type="button" aria-label="ปิด"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="wn-body" id="wnBody"></div>
+    <div class="wn-foot" id="wnFoot"></div>
+  </div>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="whatsnew.js"></script>
+<dialog id="clipDlg" class="clipdlg" aria-label="ตัวอย่างธีม"><button class="x" type="button" data-close aria-label="ปิด">✕</button>
+  <div class="cl-in">
+    <div class="cl-vid" id="clipBox"><video id="clipVid" playsinline loop preload="auto"></video><span class="cl-big" id="clipBig" hidden></span><span class="cl-msg" id="clipMsg" hidden></span>
+      <button class="cl-mute" id="clipMute" type="button" aria-label="ปิดเสียง">🔊</button><div class="cl-bar"><i id="clipBar"></i></div></div>
+    <div class="cl-side"><small id="clipKind"></small><h3 id="clipName"></h3><p id="clipDesc"></p>
+      <p class="cl-safe">คลิปจริงจากหน้าเวที พร้อมดนตรีของฉาก • ดูตรงนี้ไม่เปลี่ยนเวทีที่ไลฟ์อยู่</p>
+      <p class="cl-live" id="clipLive" hidden>🔇 กำลังไลฟ์อยู่ เลยปิดเสียงไว้ก่อน — ถ้าโปรแกรมไลฟ์จับเสียงทั้งเครื่อง คนดูจะได้ยินด้วย</p>
+      <button class="opt" id="clipCta" type="button"><b></b><span></span></button>
+      <div class="cl-nav"><button type="button" id="clipPrev">‹ ก่อนหน้า</button><span id="clipPos"></span><button type="button" id="clipNext">ถัดไป ›</button></div></div>
+  </div>
+</dialog>
+<dialog id="lockDlg" class="lockdlg" aria-label="ธีมล็อก"><button class="x" type="button" data-close aria-label="ปิด">✕</button><div class="in" id="lockBody"></div></dialog>
+<script src="app.js"></script>
+<script src="music-mini.js"></script>
+<script src="owned-gemini-ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+ตัวละครที่ติดมากับระบบ (ตรวจจากข้อมูลใบอนุญาตที่ฝังในไฟล์ .vrm แล้ว)
+
+fumiriya.vrm  — 桜田 史利矢 (Sakurada Fumiriya), VRoidプロジェクト
+hair_male.vrm — HairSample_Male, VRoidプロジェクト
+base_male.vrm — Base_Male, VRoidプロジェクト
+                VRoid Hub license: allowed_to_use_user=everyone, corporate_commercial_use=allow,
+                personal_commercial_use=profit, credit=unnecessary, modification=allow, redistribution=allow
+                (VRoid ประกาศเป็น CC0 — ดาวน์โหลดจาก opengameart.org/content/vroid-studio-cc0-models)
+
+sample.vrm    — VRM1_Constraint_Twist_Sample, (c) 2022 pixiv Inc. (ใช้ทดสอบเท่านั้น ไม่อยู่ในรายการให้เลือก)
+                VRM Public License 1.0: avatarPermission=everyone, commercialUsage=corporation, credit unnecessary
+
+ชุดแต่งกายตามธีมสร้างตอนแสดงผล (เปลี่ยนสี/ลายผ้า + พร็อพ 3D) — ไม่ได้แก้ไฟล์ .vrm ต้นฉบับ

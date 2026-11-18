@@ -1,0 +1,27 @@
+{
+  "version": 3,
+  "voice": "th-TH-PremwadeeNeural",
+  "playbackRate": 0.96,
+  "clips": [
+    {
+      "url": "/audio-tests/premwadee-greeting-v3.wav",
+      "text": "สวัสดีค่ะ",
+      "pauseAfter": 450,
+      "duration": 0.96,
+      "crop": [
+        0.2,
+        1.16
+      ]
+    },
+    {
+      "url": "/audio-tests/premwadee-welcome-v3.wav",
+      "text": "ยินดีต้อนรับทุกคนเข้าสู่ไลฟ์ของเราค่ะ",
+      "pauseAfter": 450,
+      "duration": 2.5,
+      "crop": [
+        1.7,
+        4.2
+      ]
+    }
+  ]
+}

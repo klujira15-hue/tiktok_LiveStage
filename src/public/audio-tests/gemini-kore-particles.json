@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "voice": "Gemini-Kore",
+  "playbackRate": 1,
+  "clips": [
+    {
+      "url": "/audio-tests/gemini-kore-particles.wav",
+      "text": "ได้ยินไหมคะ? ได้ยินค่ะ."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "live-stage",
+  "version": "1.8.0",
+  "description": "Live Stage by TubHool — หน้าไลฟ์ TikTok ที่คนดูเล่นด้วยได้",
+  "main": "desktop/main.js",
+  "type": "commonjs",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@pixiv/three-vrm": "^3.5.5",
+    "@pixiv/three-vrm-animation": "^3.5.5",
+    "electron-updater": "6.8.11",
+    "express": "^4.22.3",
+    "msedge-tts": "^2.1.1",
+    "socket.io": "^4.8.4",
+    "three": "^0.187.0",
+    "tiktok-live-connector": "^2.5.0"
+  },
+  "productName": "Live Stage",
+  "author": "TubHool"
+}
