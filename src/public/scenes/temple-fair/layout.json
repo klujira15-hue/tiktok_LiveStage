@@ -1,0 +1,221 @@
+{
+  "id": "temple-fair-night",
+  "status": "navigation-integrated-in-previews",
+  "image": "scene.png",
+  "imageSize": {
+    "width": 941,
+    "height": 1672
+  },
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "coordinates": "normalized-0-to-1",
+  "spawn": "entry",
+  "nodes": {
+    "entry": [
+      0.5,
+      0.72
+    ],
+    "leftFront": [
+      0.36,
+      0.69
+    ],
+    "leftLane": [
+      0.29,
+      0.49
+    ],
+    "leftJunction": [
+      0.36,
+      0.42
+    ],
+    "centerJunction": [
+      0.5,
+      0.43
+    ],
+    "rightJunction": [
+      0.71,
+      0.43
+    ],
+    "rightLane": [
+      0.76,
+      0.51
+    ],
+    "rightFront": [
+      0.76,
+      0.67
+    ],
+    "prayerQueue": [
+      0.36,
+      0.38
+    ],
+    "prayer": [
+      0.24,
+      0.35
+    ],
+    "wheelQueue": [
+      0.66,
+      0.405
+    ],
+    "wheelBoard": [
+      0.73,
+      0.36
+    ],
+    "shop": [
+      0.235,
+      0.5
+    ],
+    "stageEntry": [
+      0.5,
+      0.6
+    ],
+    "dance": [
+      0.5,
+      0.55
+    ],
+    "sparklers": [
+      0.17,
+      0.67
+    ],
+    "lantern": [
+      0.82,
+      0.62
+    ],
+    "waterApproach": [
+      0.5,
+      0.76
+    ],
+    "pier": [
+      0.5,
+      0.842
+    ]
+  },
+  "edges": [
+    [
+      "entry",
+      "leftFront"
+    ],
+    [
+      "leftFront",
+      "leftLane"
+    ],
+    [
+      "leftLane",
+      "leftJunction"
+    ],
+    [
+      "leftJunction",
+      "centerJunction"
+    ],
+    [
+      "centerJunction",
+      "rightJunction"
+    ],
+    [
+      "rightJunction",
+      "rightLane"
+    ],
+    [
+      "rightLane",
+      "rightFront"
+    ],
+    [
+      "rightFront",
+      "entry"
+    ],
+    [
+      "leftJunction",
+      "prayerQueue"
+    ],
+    [
+      "prayerQueue",
+      "prayer"
+    ],
+    [
+      "rightJunction",
+      "wheelQueue"
+    ],
+    [
+      "wheelQueue",
+      "wheelBoard"
+    ],
+    [
+      "leftLane",
+      "shop"
+    ],
+    [
+      "entry",
+      "stageEntry"
+    ],
+    [
+      "stageEntry",
+      "dance"
+    ],
+    [
+      "leftFront",
+      "sparklers"
+    ],
+    [
+      "rightFront",
+      "lantern"
+    ],
+    [
+      "entry",
+      "waterApproach"
+    ],
+    [
+      "waterApproach",
+      "pier"
+    ]
+  ],
+  "zones": [
+    {
+      "id": "prayer",
+      "label": "ไหว้พระ",
+      "node": "prayer",
+      "queue": "prayerQueue"
+    },
+    {
+      "id": "wheel",
+      "label": "ต่อคิวขึ้นชิงช้า",
+      "node": "wheelBoard",
+      "queue": "wheelQueue"
+    },
+    {
+      "id": "shop",
+      "label": "ร้านค้า",
+      "node": "shop"
+    },
+    {
+      "id": "dance",
+      "label": "เวทีรำวง",
+      "node": "dance",
+      "queue": "stageEntry"
+    },
+    {
+      "id": "sparklers",
+      "label": "จุดไฟเย็น",
+      "node": "sparklers"
+    },
+    {
+      "id": "lantern",
+      "label": "ปล่อยโคม",
+      "node": "lantern"
+    },
+    {
+      "id": "water",
+      "label": "ท่าน้ำ",
+      "node": "pier",
+      "queue": "waterApproach"
+    }
+  ],
+  "notes": [
+    "เดินรอบเวทีทางซ้ายหรือขวา; ขึ้นเวทีผ่านบันไดหน้าเท่านั้น",
+    "พื้นที่น้ำเริ่มประมาณ y=.86 ตัวละครหยุดบนท่าน้ำก่อนขอบน้ำ",
+    "จุดปล่อยโคมใช้ทางลอยโค้งออกสู่ท้องฟ้ากลางภาพเพื่อเลี่ยงชิงช้า",
+    "ต้องแยกวงล้อ กระเช้า ราวหน้าเวที และชิ้นบังหน้าเพิ่มเติมก่อนทำกิจกรรมจริง",
+    "แผนผังนี้ยังไม่ถูกเชื่อมกับของขวัญ ตัวละคร หรือธีมที่ออก LIVE",
+    "ตัวเล่นใช้ navigation-v8.json ตรวจสิ่งกีดขวางและทางบันได; nodes/edges เป็นร่างเดิม"
+  ],
+  "navigationFile": "navigation-v8.json"
+}

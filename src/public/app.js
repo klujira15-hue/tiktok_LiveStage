@@ -375,12 +375,12 @@
     // ห้องควบคุมไลฟ์เปิดได้เฉพาะตอนเชื่อมต่อไลฟ์แล้ว • สมาชิกฟรี: ปุ่มกดได้เสมอ แต่เปิดหน้าต่างชวนสมัครผู้สนับสนุนแทน
     const on = s === 'connected';
     const member = acct?.plan === 'member';
-    $('openControl').disabled = !on && !member;
+    $('openControl').disabled = !on && !fairWaiting && !member;
     $('openControl').classList.toggle('sup', member);
-    $('openControl').title = member ? 'เฉพาะผู้สนับสนุน' : on ? '' : 'เชื่อมต่อไลฟ์ก่อน ถึงจะเปิดห้องควบคุมได้';
+    $('openControl').title = member ? 'เฉพาะผู้สนับสนุน' : fairWaiting ? 'เปิดดูสถานะการเชื่อมต่อไลฟ์' : on ? '' : 'เชื่อมต่อไลฟ์ก่อน ถึงจะเปิดห้องควบคุมได้';
     $('ctlHint').textContent = member
       ? '👑 เฉพาะผู้สนับสนุน — ดูหน้าเวที + คอมเมนต์ สั่งเอฟเฟกต์ เพลง เสียงพูด ได้ในหน้าเดียว'
-      : on ? 'ดูหน้าเวที + คอมเมนต์ สั่งเอฟเฟกต์ เพลง เสียงพูด รอเริ่ม/พักเบรก ได้ในหน้าเดียว' : 'เชื่อมต่อไลฟ์ก่อนถึงจะเปิดได้ — เด้งขึ้นเองตอนเชื่อมต่อ';
+      : fairWaiting ? 'เปิดห้องควบคุมดูสถานะได้ระหว่างรอ LIVE · ระบบจะรับคนดูเมื่อเชื่อมต่อสำเร็จ' : on ? 'ดูหน้าเวที + คอมเมนต์ สั่งเอฟเฟกต์ เพลง เสียงพูด รอเริ่ม/พักเบรก ได้ในหน้าเดียว' : 'เชื่อมต่อไลฟ์ก่อนถึงจะเปิดได้ — เด้งขึ้นเองตอนเชื่อมต่อ';
   }
   const outputPanel=document.createElement('div');outputPanel.className='card';outputPanel.style.marginTop='16px';outputPanel.innerHTML='<h3>ส่งภาพฉากไป LIVE Manager</h3><p class="hint">1. เตรียมภาพฉาก → 2. เปิด LIVE Manager → เลือก OBS Virtual Camera เป็นแหล่งภาพก่อนเริ่ม LIVE จากคอม</p><div class="row"><button class="btn yellow" id="startLiveOutput" type="button">1 · เตรียมภาพฉาก</button><button class="btn ghost" id="openLiveManager" type="button">2 · เปิด LIVE Manager</button></div><p id="liveOutputStatus" class="hint" role="status">ไม่เปลี่ยนภาพไลฟ์มือถืออัตโนมัติ · Virtual Camera ส่งภาพเท่านั้น ต้องเลือกไมโครโฟน/เสียงแยกใน LIVE Manager</p>';
   $('stageLink').closest('.card').appendChild(outputPanel);
@@ -609,30 +609,36 @@
   function test(kind, extra = {}) {
     const name = extra.name || pvName();
     if (kind === 'chat') socket.emit('test:chat', { name, text: extra.text });
+    else if(kind==='like')socket.emit('test:like',{name,count:extra.count||15});
     else if (kind === 'laugh') socket.emit('test:chat', { name, text: '555555 ฮาาา' });
-    else if (kind === 'gift') socket.emit('test:gift', { name, gift: extra.gift, count: 1 });
+    else if (kind === 'gift') socket.emit('test:gift', { name, gift: extra.gift, count: 1 }, r=>{if(r)toast(r.ok?'รับคำสั่ง '+(r.activityLabel||extra.gift)+' ให้ '+name+' แล้ว':r.error,!r.ok);});
     else socket.emit('test:' + kind, { name });
   }
   function renderGifts() {
     if (!config) return;
     const th = config.themes[config.theme];
+    const heartTest=$('pvHeartMilestone');if(heartTest)heartTest.hidden=config.theme!=='templefair';
+    $('pvGame').textContent='🎮 เริ่มเกมทดสอบ';
     const gifts = th?.t?.gifts || [];
+    const giftMeta=config.themes[th?.meta?.giftPreviewTheme||config.theme]?.meta||th.meta;
     const box = $('pvGifts');
-    if (box.dataset.theme === config.theme && box.children.length) return;
+    const giftSignature=JSON.stringify([config.theme,gifts,giftMeta.effects]);if(box.dataset.giftSignature===giftSignature&&box.children.length)return;box.dataset.giftSignature=giftSignature;
     box.dataset.theme = config.theme;
     box.innerHTML = '';
     for (const g of gifts) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'giftbtn';
-      const ef = th.meta.effects?.[g.effect];
+      const ef = giftMeta.effects?.[g.effect];
       b.innerHTML = '<span></span><small></small>';
-      b.firstChild.textContent = `${ef?.icon || '🎁'} ${g.name}`;
+      if(config.theme==='templefair'&&g.image){const image=document.createElement('img');image.src=g.image;image.alt=g.name;image.className='fair-gift-image';b.firstChild.append(image,document.createTextNode(g.name));}else b.firstChild.textContent = `${ef?.icon || '🎁'} ${g.name}`;
       b.lastChild.textContent = `${nf(g.diamonds)} 💎`;
       b.onclick = () => test('gift', { gift: g.name });
       box.appendChild(b);
     }
   }
+  const fairPreviewStatus=document.createElement('div');fairPreviewStatus.id='fairPreviewStatus';fairPreviewStatus.style.cssText='font-size:13px;line-height:1.7;color:#ffe0a0;margin:12px 0;white-space:pre-line';$('pvClear').closest('.row').after(fairPreviewStatus);
+  setInterval(()=>{fairPreviewStatus.hidden=config?.theme!=='templefair';if(fairPreviewStatus.hidden)return;const crowd=$('pvFrame')?.contentWindow?.__templeFair?.crowd;if(!crowd){fairPreviewStatus.textContent='กำลังเชื่อมฉากงานวัด…';return;}const name=pvName(),tickets=crowd.ledger.s.tickets.filter(t=>t.state!=='completed'&&crowd.ledger.s.users[t.userId]?.name===name),first=tickets.find(t=>t.lane==='personal')||tickets[0],actor=first&&crowd.director.actors.find(a=>a.ticketId===first.id);const phase=first?.lane==='room'?(first.state==='playing'?'กำลังแสดง':'รอคิวแสดง'):actor?({active:'กำลังเล่น',riding:'นั่งชิงช้า',leaving:'กำลังเดินออก',wheelExit:'กำลังลงชิงช้า',waiting:'รอช่องกิจกรรม',entering:'กำลังเข้าจุดกิจกรรม',arriving:'กำลังเดินไป',wheelReady:'รอขึ้นกระเช้า',wheelAtDock:'รอขึ้นกระเช้า',wheelApproach:'กำลังขึ้นกระเช้า'}[actor.state]||'กำลังเดินไป'):'รอทางเดินเข้ากิจกรรม';const text=first?name+' · '+phase+' '+crowd.policy.activities[first.activity].label+(tickets.length>1?' · คิวถัดไป '+tickets.slice(1,4).map(t=>crowd.policy.activities[t.activity].label).join(' → '):''):'เลือกของขวัญเพื่อเริ่มกิจกรรมของ '+name;const present=Object.values(crowd.ledger.s.users).filter(u=>u.present!==false),visible=new Set(crowd.director.actors.map(a=>a.userId)),waitingPeople=present.filter(u=>!visible.has(u.id)).length,standingPeople=crowd.director.audienceOwners.filter(Boolean).length,activityGuests=crowd.director.actors.filter(a=>a.activityGuest).length;fairPreviewStatus.textContent='ของขวัญ 1 / 5 / 10 เหรียญ · สาธุ → สังฆทาน · เซียมซี → ใบคำทำนาย · ♥ 1,000 → พลุ\n'+'จุดยืนหน้าลาน '+standingPeople+' / '+crowd.director.audienceSlots.length+' คน · ผู้ร่วมกิจกรรมจากนอกฉาก '+activityGuests+' คน · รอนอกฉาก '+waitingPeople+' คน'+(waitingPeople?' (ส่งของขวัญเข้าคิวกิจกรรมได้)':'')+'\n'+text;},700);
   $('pvSend').onclick = () => {
     const text = $('pvMsg').value.trim();
     if (text) test('chat', { text });
@@ -642,14 +648,10 @@
     const b = e.target.closest('[data-t]');
     if (b) test(b.dataset.t);
   });
-  $('pvCrowd').onclick = () => socket.emit('test:crowd');
-  $('pvGame').onclick = () => socket.emit('game:autoNow', null, (r) => (r?.ok ? toast('อีก 5 วินาทีเกมเริ่ม') : toast(r?.error || 'เริ่มเกมไม่ได้', true)));
-  $('pvClear').onclick = () => {
-    socket.emit('admin:clearAudience');
-    socket.emit('admin:clearTop');
-    socket.emit('admin:resetHype');
-    toast('ล้างฉากแล้ว');
-  };
+  const heartTestButton=document.createElement('button');heartTestButton.type='button';heartTestButton.id='pvHeartMilestone';heartTestButton.className='chipbtn';heartTestButton.textContent='❤️ +1,000 หัวใจ · พลุฟรี';heartTestButton.hidden=true;heartTestButton.onclick=()=>test('like',{count:1000});$('pvQuick').append(heartTestButton);
+  $('pvCrowd').onclick = () => socket.emit('test:crowd',{},r=>toast(r?.ok?'กำลังให้คนดู '+r.count+' คนเดินเข้างาน':r?.error||'เพิ่มคนดูไม่ได้',!r?.ok));
+  $('pvGame').onclick = () => config?.theme==='templefair'?socket.emit('test:fairActivities',{},r=>toast(r?.ok?'เริ่มกิจกรรมงานวัดแล้ว':r?.error||'เริ่มกิจกรรมไม่ได้',!r?.ok)):socket.emit('game:autoNow', null, (r) => (r?.ok ? toast('อีก 5 วินาทีเกมเริ่ม') : toast(r?.error || 'เริ่มเกมไม่ได้', true)));
+  $('pvClear').onclick = () => {if(demo){clearInterval(demo);demo=null;$('pvDemo').textContent='▶ โหมดเดโมอัตโนมัติ';}socket.emit('test:reset',{},r=>toast(r?.ok?'ล้างคนดู คิว และเอฟเฟกต์แล้ว':r?.error||'ล้างฉากไม่สำเร็จ',!r?.ok));};
   $('pvReload').onclick = () => ($('pvFrame').src = 'stage.html?silent&desktop&r=' + Date.now());
   $('pvPop').onclick = () => openPreviewWindow();
   // โหมดเดโม: สุ่มคอมเมนต์ ไลก์ ของขวัญเรื่อย ๆ
@@ -662,10 +664,11 @@
       return;
     }
     $('pvDemo').textContent = '■ หยุดเดโม';
+    if(config?.theme==='templefair')socket.emit('test:crowd',{});
     demo = setInterval(() => {
       const name = pick(FAKE);
       const r = Math.random();
-      const gifts = config?.themes[config.theme]?.t?.gifts || [];
+      const current=config?.themes[config.theme];const gifts=(current?.t?.gifts||[]).filter(g=>config.theme!=='templefair'||current.meta.effects[g.effect]?.kind!=='big'&&current.meta.effects[g.effect]?.activity!=='petals');
       if (r < 0.45) test('chat', { name });
       else if (r < 0.75) test('like', { name });
       else if (r < 0.9 && gifts.length) test('gift', { name, gift: pick(gifts.slice(0, 5)).name });
@@ -681,15 +684,15 @@
   // ห้องควบคุมไลฟ์ (ในโปรแกรม = หน้าต่างลอย เด้งเองตอนเริ่มไลฟ์, ในเบราว์เซอร์ = หน้าต่างป๊อปอัป)
   $('openControl').onclick = () => {
     if (acct?.plan === 'member') return openControlLock();
-    if (status.status !== 'connected') return toast('เชื่อมต่อไลฟ์ก่อน ถึงจะเปิดห้องควบคุมได้', true);
+    if (status.status !== 'connected'&&config?.theme!=='templefair') return toast('เชื่อมต่อไลฟ์ก่อน ถึงจะเปิดห้องควบคุมได้', true);
     if (desk?.openControl) return desk.openControl();
     window.open('control.html', 'livestage-control', 'width=1040,height=690');
   };
 
   // ---------------------------------------------------------------- ธีม
   // ธีมที่สร้างเองใช้ภาพตัวอย่างของธีมต้นแบบ
-  const previewSrc = (id) => `theme-previews/${config?.themes?.[id]?.meta?.previewOf || id}.jpg`;
-  const KIND = { concert: 'ดนตรี', shrine: 'สายมู', krathong: 'เทศกาล', fishing: 'ชิล', songkran: 'เทศกาล', cny: 'เทศกาล', ghost: 'สยองขวัญ', newyear: 'เทศกาล', custom: 'สร้างเอง', temple: 'งานวัด', floating: 'ตลาด', nightmarket: 'ตลาด', muay: 'กีฬา', beach: 'ปาร์ตี้', farm: 'ชิล', cafe: 'ชิล', school: 'กีฬา', cat: 'สัตว์เลี้ยง', shiba: 'สัตว์เลี้ยง', bunny: 'สัตว์เลี้ยง', hamster: 'สัตว์เลี้ยง', penguin: 'สัตว์เลี้ยง', panda: 'สัตว์เลี้ยง', capybara: 'สัตว์เลี้ยง', hippo: 'สัตว์เลี้ยง', elephant: 'สัตว์เลี้ยง', duckling: 'สัตว์เลี้ยง', ramwong: 'เวทีเต้น', pageant: 'เวทีเต้น', molam: 'เวทีเต้น', disco: 'เวทีเต้น', sea: 'สวนสัตว์', dino: 'สวนสัตว์', safari: 'สวนสัตว์', rainforest: 'สวนสัตว์', nightzoo: 'สวนสัตว์', mookata: 'ร้านอาหาร 3D', adventure: 'เกมพิกเซล', boatrace: 'มินิเกม', angler: 'มินิเกม', village: 'มินิเกม', pixelquiz: 'มินิเกม', kitchen: 'มินิเกม', castle: 'มินิเกม', climbcity: 'มินิเกม', climbsky: 'มินิเกม', escape: 'มินิเกม', brawl: 'มินิเกม', pet3d: 'มินิเกม', wessuwan: 'สายมู', naga: 'สายมู', ganesha: 'สายมู', trimurti: 'สายมู', caishen: 'สายมู', ubosot: 'สายบุญ', church: 'สายบุญ', mosque: 'สายบุญ', valentine: 'เทศกาล', rocket: 'เทศกาล', mother: 'เทศกาล', moon: 'เทศกาล', cemetery: 'สยองขวัญ', ghostgate: 'สยองขวัญ', rodhae: 'เวทีเต้น', djclub: 'ดนตรี', molamstage: 'เวทีเต้น' };
+  const previewSrc = (id) => id === 'templefair' ? '/characters/fair-v1/effects-v7/background.png' : `theme-previews/${config?.themes?.[id]?.meta?.previewOf || id}.jpg`;
+  const KIND = { templefair:'งานวัดของเรา', concert: 'ดนตรี', shrine: 'สายมู', krathong: 'เทศกาล', fishing: 'ชิล', songkran: 'เทศกาล', cny: 'เทศกาล', ghost: 'สยองขวัญ', newyear: 'เทศกาล', custom: 'สร้างเอง', temple: 'งานวัด', floating: 'ตลาด', nightmarket: 'ตลาด', muay: 'กีฬา', beach: 'ปาร์ตี้', farm: 'ชิล', cafe: 'ชิล', school: 'กีฬา', cat: 'สัตว์เลี้ยง', shiba: 'สัตว์เลี้ยง', bunny: 'สัตว์เลี้ยง', hamster: 'สัตว์เลี้ยง', penguin: 'สัตว์เลี้ยง', panda: 'สัตว์เลี้ยง', capybara: 'สัตว์เลี้ยง', hippo: 'สัตว์เลี้ยง', elephant: 'สัตว์เลี้ยง', duckling: 'สัตว์เลี้ยง', ramwong: 'เวทีเต้น', pageant: 'เวทีเต้น', molam: 'เวทีเต้น', disco: 'เวทีเต้น', sea: 'สวนสัตว์', dino: 'สวนสัตว์', safari: 'สวนสัตว์', rainforest: 'สวนสัตว์', nightzoo: 'สวนสัตว์', mookata: 'ร้านอาหาร 3D', adventure: 'เกมพิกเซล', boatrace: 'มินิเกม', angler: 'มินิเกม', village: 'มินิเกม', pixelquiz: 'มินิเกม', kitchen: 'มินิเกม', castle: 'มินิเกม', climbcity: 'มินิเกม', climbsky: 'มินิเกม', escape: 'มินิเกม', brawl: 'มินิเกม', pet3d: 'มินิเกม', wessuwan: 'สายมู', naga: 'สายมู', ganesha: 'สายมู', trimurti: 'สายมู', caishen: 'สายมู', ubosot: 'สายบุญ', church: 'สายบุญ', mosque: 'สายบุญ', valentine: 'เทศกาล', rocket: 'เทศกาล', mother: 'เทศกาล', moon: 'เทศกาล', cemetery: 'สยองขวัญ', ghostgate: 'สยองขวัญ', rodhae: 'เวทีเต้น', djclub: 'ดนตรี', molamstage: 'เวทีเต้น' };
   // '1.4.0' → 10400 (ไว้เทียบเวอร์ชัน) • ไม่มี = 0 (ธีมชุดแรก)
   const verNum = (v) => String(v || '0').split('.').reduce((n, x, i) => n + (Number(x) || 0) * [10000, 100, 1][i], 0);
   function allowed(id) {
@@ -1398,3 +1401,4 @@
 
   loadAccount();
 })();
+

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "fair-motion-background",
+    "args": {
+      "referenced_image_paths": [
+        "Z:/Rujira/tiktok_LiveStage/src/public/scenes/temple-fair/scene.png"
+      ],
+      "transparent_background": false,
+      "prompt": "Edit this exact portrait temple-fair game background for animation layering. Preserve exact camera, framing, dimensions/aspect ratio, Buddha shrine at upper left, moon, river, shops, stage and foreground steps. ONLY REMOVE the Ferris wheel at upper right: all circular rim, spokes, gondolas, central hub and tall support legs. Preserve the low red/gold boarding platform, entrance stair and queue railings beneath it in their original locations. Fill the removed tall wheel area naturally with matching dark blue sky, distant green trees and riverside scenery. Do NOT introduce another wheel, boats, people, text or lanterns. Keep landmarks, floor and waterline in exactly the same positions, same warm jewel-tone illustrated game style. This is a clean background plate behind an animated wheel, no wheel components baked in."
+    }
+  },
+  {
+    "id": "fair-effects-props",
+    "args": {
+      "referenced_image_paths": [
+        "Z:/Rujira/tiktok_LiveStage/src/public/scenes/temple-fair/scene.png"
+      ],
+      "transparent_background": true,
+      "prompt": "Production 2D game prop sprite atlas matching the reference Thai temple fair illustration, jewel tones, warm gold details, polished cartoon painted style. EXACT 2x2 equal-cell grid, 4 separate assets with generous transparent padding. TOP LEFT: green banana-leaf krathong boat with pink lotus flowers, small upright lit candle and three incense sticks, front three-quarter view, no water or floor or shadow. TOP RIGHT: orange gold PAPER SKY LANTERN, upright cylindrical lantern with glowing warm interior and visible circular bottom rim, no sky or string. BOTTOM LEFT: FRONT VIEW of one small red-and-gold Ferris-wheel gondola REAR LAYER: ornate gold/red canopy roof at y15%-35% of its cell, open empty passenger space at y35%-70%, a seat and rear wall at y60%-80%, bottom floor y80%. NO FRONT SAFETY RAIL in this cell. No people. BOTTOM RIGHT: matching gondola FOREGROUND LAYER ONLY: red/gold FRONT SAFETY RAIL and bottom panel at EXACT y65%-85% of cell, width and horizontal alignment matching bottom-left gondola. Everything else in bottom-right cell transparent, NO roof, no back wall. These two lower cells must align when overlaid at identical coordinates. All upright, no perspectives tilted sideways, no ferris wheel itself, no text, no numbers, no grid, no cast shadow, fully transparent clean background, no white haze."
+    }
+  },
+  {
+    "id": "fair-lantern-sky",
+    "args": {
+      "referenced_image_paths": [
+        "Z:/Rujira/tiktok_LiveStage/src/public/scenes/temple-fair/scene.png"
+      ],
+      "transparent_background": false,
+      "prompt": "Create a portrait 9:16 cinematic background for a Thai temple fair sky lantern celebration, matching the reference's polished warm illustrated jewel-tone style. Composition: vast deep midnight blue starry sky takes TOP 75 percent, soft luminous full moon in upper middle, subtle wisps of cloud. In bottom 25 percent a charming Thai temple-fair village with traditional rooflines, glowing amber shop lanterns, flowering trees, a river with gentle reflected lights in foreground. A few distant golden temple spires. This is an animation BACKGROUND PLATE: absolutely NO floating sky lanterns baked in, no people, no text, no watermark, no interface, no Ferris wheel. Leave broad uncluttered sky to animate many lanterns floating upward. Rich atmospheric blue/gold, no oversaturated neon, soft sense of depth."
+    }
+  }
+]

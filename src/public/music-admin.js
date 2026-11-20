@@ -183,6 +183,30 @@
   }
 
   // ---------------- รายการเพลง (ลากสลับลำดับได้)
+
+  // HTML dialog works in Electron; window.prompt is unsupported in the desktop app.
+  const renameDialog=document.createElement('dialog');renameDialog.id='mRename';
+  renameDialog.setAttribute('aria-labelledby','mRenameTitle');
+  renameDialog.innerHTML='<form id="mRenameForm"><h2 id="mRenameTitle">เปลี่ยนชื่อเพลง</h2><label for="mRenameInput">ชื่อที่แสดงบนหน้าเวที</label><input id="mRenameInput" type="text" maxlength="120" autocomplete="off" required style="width:100%;box-sizing:border-box;margin:12px 0"><p id="mRenameError" role="alert" style="color:#ff9c9c;min-height:1.4em"></p><div style="display:flex;gap:10px;justify-content:flex-end"><button type="button" id="mRenameCancel" class="btn ghost">ยกเลิก</button><button type="submit" id="mRenameSave" class="btn">บันทึก</button></div></form>';
+  const renameStyle=document.createElement('style');renameStyle.textContent='#mRename{width:min(480px,calc(100vw - 48px));padding:26px;border:1px solid #68534c;border-radius:20px;background:#201b19;color:#fff;box-shadow:0 20px 90px #000a}#mRename::backdrop{background:#0009}#mRename:not([open]){display:none}#mRename h2{margin-top:0}';document.head.append(renameStyle);document.body.append(renameDialog);
+  let renameId=null,renameBusy=false;
+  function openRename(it){renameId=it.id;$('mRenameInput').value=it.title;$('mRenameError').textContent='';if(!renameDialog.open)renameDialog.showModal();$('mRenameInput').focus();$('mRenameInput').select();}
+  $('mRenameCancel').onclick=()=>renameDialog.close();
+  renameDialog.addEventListener('cancel',e=>{if(renameBusy)e.preventDefault();});
+  renameDialog.addEventListener('close',()=>{document.querySelector('#mList [data-ren="'+CSS.escape(renameId||'')+'"]')?.focus();});
+  $('mRenameForm').addEventListener('submit',e=>{
+    e.preventDefault();if(renameBusy)return;const title=$('mRenameInput').value.trim();
+    if(!title){$('mRenameError').textContent='กรุณาใส่ชื่อเพลง';$('mRenameInput').focus();return;}
+    if(!pl.items.some(x=>x.id===renameId)){$('mRenameError').textContent='เพลงนี้ไม่อยู่ในรายการแล้ว';return;}
+    const items=pl.items.map(x=>x.id===renameId?{...x,title}:x);
+    renameBusy=true;$('mRenameSave').disabled=true;$('mRenameCancel').disabled=true;$('mRenameError').textContent='กำลังบันทึก…';
+    socket.timeout(8000).emit('admin:saveConfig',{playlist:{...pl,items}},(error,result)=>{
+      renameBusy=false;$('mRenameSave').disabled=false;$('mRenameCancel').disabled=false;
+      if(error||!result?.ok){$('mRenameError').textContent='บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง';return;}
+      $('mRenameError').textContent='';renameDialog.close();$('mLocalStatus').textContent='บันทึกชื่อเพลงแล้ว';
+    });
+  });
+
   function renderList() {
     const items = pl.items || [];
     const box = $('mList');
@@ -197,7 +221,7 @@
         <span class="m-ic">${/^(mp4|m4v|webm)$/.test(x.ext) ? '🎬' : '🎵'}</span>
         <div class="m-tt"><div class="m-name" title="${esc(x.title)}">${esc(x.title)}</div><small>${esc((x.ext || '').toUpperCase())}${/^(mp4|m4v|webm)$/.test(x.ext) ? ' • เล่นเฉพาะเสียง' : ''}</small></div>
         <span class="m-d">${x.dur ? fmt(x.dur) : ''}</span>
-        <span class="m-act"><button class="btn sm" data-preview="${esc(x.id)}" title="ฟังทดสอบในเครื่อง" aria-label="ฟังทดสอบในเครื่อง">🎧 ฟังในเครื่อง</button><button class="btn sm" data-play="${esc(x.id)}" title="เล่นเพลงนี้ผ่านหน้าเวที">▶ เล่นเข้าไลฟ์</button><button class="btn sm" data-ren="${esc(x.id)}" title="เปลี่ยนชื่อ">✎</button><button class="btn sm danger" data-del="${esc(x.id)}" title="ลบ">✕</button></span>
+        <span class="m-act"><button class="btn sm" data-preview="${esc(x.id)}" title="ฟังทดสอบในเครื่อง" aria-label="ฟังทดสอบในเครื่อง">🎧 ฟังในเครื่อง</button><button class="btn sm" data-play="${esc(x.id)}" title="เล่นเพลงนี้ผ่านหน้าเวที">▶ เล่นเข้าไลฟ์</button><button class="btn sm" data-ren="${esc(x.id)}" title="เปลี่ยนชื่อ" aria-label="เปลี่ยนชื่อเพลง ${esc(x.title)}">✎</button><button class="btn sm danger" data-del="${esc(x.id)}" title="ลบ">✕</button></span>
       </div>`)
       .join('');
     markPlaying();
@@ -220,8 +244,7 @@
     if (b.dataset.play) return b.dataset.play === st.id && st.playing ? cmd('pause') : b.dataset.play === st.id ? cmd('toggle') : cmd('play', { id: b.dataset.play });
     if (b.dataset.ren) {
       const it = pl.items.find((x) => x.id === b.dataset.ren);
-      const t = prompt('ชื่อเพลง (ขึ้นบนหน้าเวที)', it?.title || '');
-      if (t != null && t.trim()) save({ items: pl.items.map((x) => (x.id === it.id ? { ...x, title: t.trim() } : x)) });
+      if (it) openRename(it);
       return;
     }
     if (b.dataset.del) {

@@ -8,6 +8,13 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, safeStorage, shell } = requir
 const fs = require('fs');
 const net = require('net');
 const path = require('path');
+require('./stdio-guard')();
+// Keep the animation clock and preview painting live when another window covers the app.
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-features','CalculateNativeWinOcclusion');
+
 
 // พอร์ตของหน้าเวที: ใช้พอร์ตเดิมที่เคยใช้ (ลิงก์ใน LIVE Studio จะได้ไม่เปลี่ยน) ถ้าไม่ว่างค่อยหาพอร์ตอื่น
 let PORT = Number(process.env.LIVESTAGE_PORT) || 3030;
@@ -152,6 +159,7 @@ function createWindow() {
     autoHideMenuBar: process.platform !== 'darwin',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      backgroundThrottling: false,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -244,7 +252,7 @@ function openPreview() {
     autoHideMenuBar: true,
     alwaysOnTop: !!p.pin,
     icon: path.join(__dirname, '..', 'build', 'icon.png'),
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true },
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), backgroundThrottling: false, contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
   if (p.pin) previewWin.setAlwaysOnTop(true, 'floating');
   previewWin.setMenu(null);
@@ -318,7 +326,7 @@ function openControl(focus = true) {
     alwaysOnTop: !!p.pin,
     show: false,
     icon: path.join(__dirname, '..', 'build', 'icon.png'),
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true },
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), backgroundThrottling: false, contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
   if (p.pin) controlWin.setAlwaysOnTop(true, 'floating');
   controlWin.setMenu(null);
@@ -340,6 +348,7 @@ let controlCloseT = null;
 // server.js setStatus() เรียกทุกครั้งที่สถานะการเชื่อมต่อไลฟ์เปลี่ยน
 global.__liveStageOnStatus = (status) => {
   if (!booted) return;
+  if(global.__liveStageFairWaiting?.()&&['connecting','offline'].includes(status)){clearTimeout(controlCloseT);openControl(false);return;}
   if (status === 'connected') {
     clearTimeout(controlCloseT);
     if (!wasLive) openControl(false);

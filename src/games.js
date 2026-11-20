@@ -466,6 +466,17 @@ module.exports = function createGames(ctx) {
   }
 
   // ---------------- รับคอมเมนต์
+  function fortune(u) {
+    const now = Date.now();
+      if (now - (lastFortune.get(u.id) || 0) > 60_000) {
+        lastFortune.set(u.id, now);
+        const no = Math.floor(Math.random() * FORTUNES.length);
+        const [level, msg] = FORTUNES[no];
+        io.emit('fortune', { user: { id: u.id, name: u.name, avatar: u.avatar || '' }, no: no + 1, level, text: msg });
+        log('game', `${u.name} เสี่ยงเซียมซีได้ใบที่ ${no + 1} (${level})`);
+      }
+  }
+
   function onChat(u, text) {
     const t = String(text || '').trim();
     const n = norm(t);
@@ -496,13 +507,7 @@ module.exports = function createGames(ctx) {
     // เซียมซี
     const fcmd = norm(cfg.fortuneCommand || 'เซียมซี');
     if (cfg.fortune !== false && (n === fcmd || n === 'ดูดวง' || n === 'เสี่ยงเซียมซี')) {
-      if (now - (lastFortune.get(u.id) || 0) > 60_000) {
-        lastFortune.set(u.id, now);
-        const no = Math.floor(Math.random() * FORTUNES.length);
-        const [level, msg] = FORTUNES[no];
-        io.emit('fortune', { user: { id: u.id, name: u.name, avatar: u.avatar || '' }, no: no + 1, level, text: msg });
-        log('game', `${u.name} เสี่ยงเซียมซีได้ใบที่ ${no + 1} (${level})`);
-      }
+      fortune(u);
     }
 
     // ทีม
@@ -732,5 +737,5 @@ module.exports = function createGames(ctx) {
     return true;
   }
 
-  return { onChat, onLike, onGift, onSocial, onEnter, register, state: publicState, levelOf, mergeId };
+  return { onChat, fortune, onLike, onGift, onSocial, onEnter, register, state: publicState, levelOf, mergeId };
 };

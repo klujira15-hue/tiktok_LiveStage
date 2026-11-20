@@ -1,0 +1,24 @@
+{
+  "version": 15,
+  "freePrayerCooldownMs": 60000,
+  "freeShopCooldownMs": 30000,
+  "communityLikeStep": 5000,
+  "communityRecipients": 6,
+  "activeViewerWindowMs": 180000,
+  "cinematicGapMs": 8000,
+  "activities": {
+    "prayer": {"label":"ไหว้พระ","entry":"พิมพ์ ไหว้พระ ฟรี 1 ครั้ง/นาที","durationMs":7000,"capacity":10,"lane":"personal"},
+    "sparklers": {"label":"ไฟเย็น","entry":"ของขวัญไฟเย็น หรือรางวัลติดตามครั้งแรก","durationMs":10000,"capacity":3,"lane":"personal"},
+    "water": {"label":"ลอยกระทง","entry":"ของขวัญกระทง","durationMs":10000,"capacity":3,"lane":"personal"},
+    "lantern": {"label":"ปล่อยโคมเล็ก","entry":"ของขวัญโคมเล็ก หรือรางวัลแชร์ครั้งแรก","durationMs":10000,"capacity":2,"lane":"personal"},
+    "wheel": {"label":"ขึ้นชิงช้า","entry":"ของขวัญชิงช้า","laps":1,"normalLapMs":48000,"capacity":8,"lane":"personal"},
+    "dance": {"label":"เต้นรำวง","entry":"ของขวัญรำวง หรือรางวัลหัวใจชุมชน","cycles":4,"durationByCharacter":[8200,14400,9400,7800],"capacity":6,"lane":"personal"},
+    "sky": {"label":"แจกโคมเต็มฟ้า","entry":"ของขวัญใหญ่","durationMs":14000,"capacity":1,"lane":"room"},
+    "shop": {"label":"เดินชมร้านค้า","entry":"พิมพ์ เดินร้านค้า ฟรี 1 ครั้ง/30 วินาที","durationMs":5000,"capacity":2,"lane":"personal"}
+  },
+  "giftBindings": {
+    "demo:sparklers":"sparklers", "demo:water":"water", "demo:lantern":"lantern",
+    "demo:wheel":"wheel", "demo:dance":"dance", "demo:sky":"sky"
+  },
+  "liveGiftBindings": {}
+}

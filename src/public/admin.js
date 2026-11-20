@@ -151,6 +151,8 @@
     fillLan(c);
   }
 
+  function fairSettings(){let box=document.getElementById('fairSettings');if(activeId()!=='templefair'){if(box)box.remove();return;}if(box)return;box=document.createElement('section');box.id='fairSettings';box.className='card';const title=document.createElement('h3');title.textContent='🏮 บรรยากาศงานวัด';box.append(title);const current=tset().fair||{};for(const [key,label]of [['ambient','ผู้ชมเดินเที่ยวฟรี'],['showSigns','ป้ายชื่อและคำแนะนำ'],['sound','เสียงกิจกรรม'],['paused','พักเวลาฉาก เก็บสิทธิ์เข้าคิวไว้']]){const l=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.dataset.fair=key;input.checked=key==='paused'?!!current[key]:current[key]!==false;l.append(input,document.createTextNode(' '+label+' '));box.append(l);}const b=document.createElement('button');b.className='btn';b.textContent='บันทึกบรรยากาศ';b.onclick=()=>{const fair=Object.fromEntries([...box.querySelectorAll('[data-fair]')].map(i=>[i.dataset.fair,i.checked]));saveTheme({fair},r=>{b.textContent=r?.ok?'บันทึกแล้ว':'บันทึกไม่สำเร็จ';});};box.append(b);document.getElementById('page-stage').append(box);}
+  setInterval(()=>{if(config)fairSettings();},1000);
   // ---------------- gifts table
   function effectSelect(value) {
     const sel = document.createElement('select');
@@ -312,8 +314,8 @@
     const cmd = tset().requestCommand || meta().defaults.requestCommand;
     socket.emit('test:chat', { name: tName(), text: `${cmd} ${list[Math.floor(Math.random() * list.length)]}` });
   };
-  $('tCrowd').onclick = () => socket.emit('test:crowd');
-  $('clearAudience').onclick = () => socket.emit('admin:clearAudience');
+  $('tCrowd').onclick = () => socket.emit('test:crowd',{});
+  $('clearAudience').onclick = () => {if(demoTimer){clearInterval(demoTimer);demoTimer=null;$('tAuto').textContent='▶ โหมดเดโมอัตโนมัติ';}socket.emit(activeId()==='templefair'?'test:reset':'admin:clearAudience',{});};
   $('clearTop').onclick = () => socket.emit('admin:clearTop');
   $('resetHype').onclick = () => socket.emit('admin:resetHype');
 
@@ -334,7 +336,7 @@
       if (r < 0.45) socket.emit('test:chat', { name });
       else if (r < 0.75) socket.emit('test:like', { name });
       else if (r < 0.97) {
-        const gifts = tset().gifts.filter((g) => g.diamonds < 500);
+        const gifts = tset().gifts.filter((g) => g.diamonds < 500&&(activeId()!=='templefair'||!['sky','petals'].includes(meta().effects[g.effect]?.activity)));
         const g = gifts[Math.floor(Math.random() * gifts.length)];
         if (g) socket.emit('test:gift', { name, gift: g.name, count: Math.random() < 0.2 ? 5 : 1 });
       } else socket.emit('test:follow', { name });

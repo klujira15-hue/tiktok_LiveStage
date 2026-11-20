@@ -1,0 +1,22 @@
+'use strict';
+const {app,BrowserWindow}=require('electron');const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');const data=path.join(root,'.local','character-animation-check');fs.mkdirSync(data,{recursive:true});app.setPath('userData',data);
+app.commandLine.appendSwitch('disable-background-timer-throttling');app.commandLine.appendSwitch('disable-renderer-backgrounding');app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');const report={ok:false,errors:[]};let win;
+app.whenReady().then(async()=>{try{
+  win=new BrowserWindow({show:false,width:1400,height:1100,webPreferences:{offscreen:true,sandbox:true,contextIsolation:true,nodeIntegration:false,backgroundThrottling:false}});
+  win.webContents.setFrameRate(30);win.webContents.session.setPermissionRequestHandler((_wc,_permission,callback)=>callback(false));
+  win.webContents.on('console-message',(_event,level,message)=>{if(level>=3)report.errors.push(String(message).slice(0,250));});
+  await win.loadURL('http://127.0.0.1:3031/characters/fair-v1/preview.html');
+  report.loaded=await win.webContents.executeJavaScript(`new Promise((resolve,reject)=>{const start=Date.now();const timer=setInterval(()=>{if(window.__fairCharacterCheck){clearInterval(timer);resolve(window.__fairCharacterCheck);}else if(Date.now()-start>25000){clearInterval(timer);reject(Error(document.getElementById('status').textContent));}},100);})`);
+  assert.equal(report.loaded.loaded,4);assert(report.loaded.frames.every(n=>n===8));assert(report.loaded.transparentFractions.every(n=>n>.2&&n<.95));
+  const sample=()=>win.webContents.executeJavaScript(`(()=>{const a=document.getElementById('show').getContext('2d').getImageData(0,0,1280,720).data;let hash=0,green=0;for(let i=0;i<a.length;i+=68){hash=(Math.imul(hash,31)+a[i]+a[i+1]*3+a[i+2]*7)|0;if(a[i+1]>170&&a[i]<45&&a[i+2]<45)green++;}return{hash,green};})()`);
+  const first=await sample();await new Promise(r=>setTimeout(r,850));const second=await sample();assert.notEqual(first.hash,second.hash,'Canvas must change over time');assert(second.green<20,'Green screen must not remain in the animation');report.animationChanges=true;
+  report.actions=await win.webContents.executeJavaScript(`(async()=>{const results=[];for(const select of document.querySelectorAll('.card select'))for(const option of select.options){select.value=option.value;select.dispatchEvent(new Event('change'));await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));results.push(option.value);}document.getElementById('danceAll').click();return results;})()`);
+  report.route=await win.webContents.executeJavaScript(`(async()=>{document.querySelector('#zones button').click();await new Promise(r=>setTimeout(r,500));return document.getElementById('destination').textContent;})()`);assert(report.route.includes('ไหว้พระ'));
+  const exportDir=path.join(root,'src/public/characters/fair-v1/examples');fs.mkdirSync(exportDir,{recursive:true});const video=path.join(exportDir,'fair-characters-animation-smooth.webm');
+  if(fs.existsSync(video))throw Error('Video already exists; avoid overwrite');
+  const download=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Video export timed out')),30000);win.webContents.session.once('will-download',(_event,item)=>{item.setSavePath(video);item.once('done',(_e,state)=>{clearTimeout(timer);state==='completed'?resolve():reject(Error('Download '+state));});});});
+  await win.webContents.executeJavaScript(`document.getElementById('record').click()`);await download;assert(fs.statSync(video).size>30000);report.video=video;
+  await new Promise(r=>setTimeout(r,300));const png=await win.webContents.capturePage();const screenshot=path.join(data,'preview.png');fs.writeFileSync(screenshot,png.toPNG());report.screenshot=screenshot;
+  assert.equal(report.errors.length,0);report.ok=true;
+}catch(e){report.error=e.message;process.exitCode=1;}finally{fs.writeFileSync(path.join(data,'result.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));win?.destroy();app.quit();}});

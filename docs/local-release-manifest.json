@@ -27,7 +27,7 @@
     },
     {
       "path": "src/public/stage.js",
-      "sha256": "135c3e5b11d975f55e8f2984c2d05ce069a7e438c0de85a6623ff2df00662bac"
+      "sha256": "08a6ad4e114442a558b122e5ec0a9cb3fcb1ddbd38bfadb592d87fbaf346863d"
     },
     {
       "path": "src/public/stage.html",
@@ -100,6 +100,10 @@
     {
       "path": "src/desktop/live-manager-output.cjs",
       "sha256": "8a3d0489bb3b71179fd57c5e0ce49f549e0468df02e6f2f267d9af60b1027b93"
+    },
+    {
+      "path": "src/public/scene-levels.js",
+      "sha256": "f44bd201bd0c855af286de3296a39b04b412122c5a8fb233290316d7462eeb73"
     }
   ]
 }

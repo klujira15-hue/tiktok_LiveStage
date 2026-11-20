@@ -2,6 +2,7 @@
 // เชื่อม TikTok Live -> ส่งเหตุการณ์ (คอมเมนต์, ของขวัญ, ไลก์, ติดตาม, แชร์) ไปหน้าเวที ผ่าน Socket.IO
 // รองรับหลายธีม (คอนเสิร์ต / ไหว้ศาล / ลอยกระทง) เปลี่ยนได้จากแผงควบคุม
 const path = require('path');
+const fairConnection=require('./fair-connection');
 const fs = require('fs');
 const http = require('http');
 const os = require('os');
@@ -176,6 +177,7 @@ const theme = () => THEMES[config.theme];
 function themeSettings(id) {
   const def = structuredClone(THEMES[id].defaults);
   const setting = { ...def, ...(config.themes[id] || {}) };
+  if(id==='templefair') setting.gifts=require('./fair-gifts').normalize(setting.gifts);
   if (def.host && !config.themes[id]?.host) setting.host = 'ผู้จัดไลฟ์';
   return setting;
 }
@@ -257,6 +259,8 @@ const state = {
   log: [],
 };
 
+const fairBridge = new (require('./fair-live-bridge').FairLiveBridge)({dir:DATA_DIR,emit:(...args)=>io.emit(...args),mode:()=>wantConnected||state.status==='connected'?'live':'test',room:()=>state.roomId,enabled:()=>config.theme==='templefair',settings:()=>themeSettings('templefair'),meta:()=>THEMES.templefair});
+let fairLastSession = null;
 const COLORS = ['#ff4fa3', '#39d5ff', '#ffd23f', '#8b5cff', '#3dff9e', '#ff7b39', '#ff3b5c', '#4fffe6'];
 const colorFor = (id) => {
   let h = 0;
@@ -344,6 +348,7 @@ function touchUser(u) {
     state.audience.set(u.id, a);
     games.onEnter(u, a);
     io.emit('join', a);
+    fairBridge.push('join', u);
   } else {
     a.lastActive = Date.now();
     if (u.avatar && !a.avatar) a.avatar = u.avatar;
@@ -380,6 +385,7 @@ function handleChat(u, comment) {
   }
   const a = touchUser(u);
   io.emit('chat', { id: u.id, name: u.name, text, inCrowd: !!a });
+  fairBridge.push('chat', u, {text});
   extras.onEvent('chat', u);
   // วาเลนไทน์: พิมพ์ "จับคู่" = ลงชื่อลุ้นเป็นคู่รักประจำไลฟ์
   if (config.theme === 'valentine' && text.replace(/\s+/g, '') === 'จับคู่') couplePool.set(u.id, { id: u.id, name: u.name, at: Date.now() });
@@ -397,11 +403,13 @@ function handleChat(u, comment) {
     log('chat', `${u.name}: ${text}`);
     return;
   }
-  const wasCommand = adventure.onChat(u, text) || minigames.onChat(u, text) || play.onChat(u, text);
+  const fairCommand = config.theme==='templefair' && ['สาธุ','สาธุๆ','เซียมซี'].includes(text.trim());
+  const wasCommand = fairCommand || adventure.onChat(u, text) || minigames.onChat(u, text) || play.onChat(u, text);
   modFeed(u, text, false);
   if (!wasCommand) { aiMaybe(u, text); ownedGemini.onComment(u,text).catch(() => {}); }
   log('chat', `${u.name}: ${text}`);
-  games.onChat(u, text);
+  if(config.theme!=='templefair') games.onChat(u, text);
+  else if(text.trim()==='เซียมซี') games.fortune(u);
 
   const cmd = (active().requestCommand || '').trim();
   if (cmd && text.startsWith(cmd)) {
@@ -418,7 +426,7 @@ function handleChat(u, comment) {
 function effectForGift(name, diamonds) {
   const gifts = active().gifts || [];
   const lower = String(name || '').toLowerCase();
-  const exact = gifts.find((g) => g.name.toLowerCase() === lower);
+  const exact = gifts.find((g) => g.name.toLowerCase() === lower || config.theme==='templefair'&&g.aliases?.some(alias=>alias.toLowerCase()===lower));
   if (exact) return exact.effect;
   // ของขวัญที่ไม่ได้ตั้งค่า -> เลือกเอฟเฟกต์ตามมูลค่าเพชรที่ใกล้เคียง
   const tiers = [...gifts].sort((a, b) => a.diamonds - b.diamonds);
@@ -479,6 +487,7 @@ function giftIconsPublic() {
 }
 
 function handleGift(u, gift) {
+  if(config.theme==='templefair'&&gift.receiptId&&fairBridge.store().seen.has(String(gift.receiptId)))return;
   u = safeUser(u);
   const count = Math.max(1, gift.count | 0);
   const diamondsEach = Math.max(0, gift.diamonds | 0);
@@ -503,9 +512,10 @@ function handleGift(u, gift) {
   }
 
   const effect = effectForGift(gift.name, diamondsEach);
+  fairBridge.gift(u, gift, effect);
   io.emit('gift', {
     user: { id: u.id, name: u.name, avatar: u.avatar || '', color: a?.color || colorFor(u.id) },
-    gift: { name: gift.name, image: gift.image || '', diamonds: diamondsEach, count, total },
+    gift: { id: gift.id||null, receiptId:gift.receiptId||null, name: gift.name, image: gift.image || '', diamonds: diamondsEach, count, total },
     effect,
   });
   io.emit('top', topList());
@@ -524,6 +534,7 @@ function handleLike(u, count, total) {
   if (total) state.totalLikes = total;
   else state.totalLikes += count;
   io.emit('like', { id: u.id, name: u.name, count, total: state.totalLikes });
+  fairBridge.push('like', u, {quantity:Math.max(0,Math.floor(Number(count)||0)),total:Math.max(0,Math.floor(Number(state.totalLikes)||0))});
   games.onLike(u, count);
   extras.onEvent('like', u, { count, total: state.totalLikes });
   play.onLike(u, count, state.totalLikes);
@@ -536,6 +547,7 @@ function handleSocial(u, kind) {
   u = safeUser(u);
   touchUser(u);
   io.emit('social', { id: u.id, name: u.name, kind });
+  fairBridge.push(kind, u);
   games.onSocial(u, kind);
   extras.onEvent(kind, u);
   play.onSocial(u, kind);
@@ -673,6 +685,7 @@ function setStatus(status, text) {
   state.status = status;
   state.statusText = text;
   io.emit('status', { status, statusText: text, username: config.username, roomId: state.roomId });
+  if(config.theme==='templefair'){const snapshot=fairBridge.snapshot();if(snapshot.sessionId!==fairLastSession){fairLastSession=snapshot.sessionId;io.emit('themeEvent',{type:'fairSession',snapshot:{...snapshot,activeViewers:audienceList()}});}}
   // โปรแกรมเดสก์ท็อป: เปิดห้องควบคุมไลฟ์เองตอนเชื่อมต่อสำเร็จ ปิดเองตอนไลฟ์จบ/หลุด (desktop/main.js)
   try {
     global.__liveStageOnStatus?.(status);
@@ -818,7 +831,7 @@ async function connectTikTokLive() {
       count = require('./gift-streak')(streaks,key,repeat,!!d.repeatEnd);
       if (count <= 0) return;
     }
-    handleGift(u, { name, diamonds, image, count });
+    handleGift(u, { id:d.giftId, receiptId:(d.msgId||d.common?.msgId||d.groupId)?'tiktok:'+u.id+':'+d.giftId+':'+(d.msgId||d.common?.msgId||d.groupId)+':'+repeat:undefined, name, diamonds, image, count });
   });
 
   conn.on(WebcastEvent.LIKE, (d) => {
@@ -845,6 +858,8 @@ async function connectTikTokLive() {
   });
 
   conn.on(WebcastEvent.STREAM_END, () => {
+    if(config.theme==='templefair'&&connection!==conn)return;
+    if(fairConnection.keepWatching({theme:config.theme,wanted:wantConnected,autoConnect:config.autoConnect})){extras.onEnded();resetCounters();log('system','งานวัด: ไลฟ์จบแล้ว รอเชื่อมรอบใหม่');scheduleReconnect('รอไลฟ์รอบใหม่');return;}
     extras.onEnded();
     setAutoConnect(false);
     log('system', 'ไลฟ์จบแล้ว');
@@ -864,12 +879,18 @@ async function connectTikTokLive() {
 
   try {
     let authenticatedRoomId=null;
-    if(global.__liveStageTikTokAccount){
+    if(config.theme==='templefair'){
+      const lookup=await fairConnection.resolveRoom({username,fetchApi:id=>require('tiktok-live-connector').fetchRoomInfoFromApiLiveRoute({webClient:conn.webClient,uniqueId:id}),fetchSaved:global.__liveStageTikTokAccount?id=>global.__liveStageTikTokAccount.readLiveRoom(id,{timeoutMs:4500}):null});
+      authenticatedRoomId=lookup.roomId;
+      if(connection!==conn||!wantConnected)return;
+      if(authenticatedRoomId)log('system','งานวัด: พบห้อง LIVE จาก '+lookup.source);
+    }else if(global.__liveStageTikTokAccount){
       authenticatedRoomId=await global.__liveStageTikTokAccount.readLiveRoom(username);
       if(connection!==conn||!wantConnected)return;
       if(authenticatedRoomId)log('system','พบห้อง LIVE จาก session TikTok ในเครื่อง');
     }
     const st = await conn.connect(authenticatedRoomId||undefined);
+    if(config.theme==='templefair'&&(connection!==conn||!wantConnected)){await conn.disconnect();return;}
     const newRoom = st.roomId !== state.roomId;
     if (newRoom) resetCounters(); // ไลฟ์รอบใหม่ (ต่อกลับห้องเดิมหลังหลุด = นับต่อ)
     state.roomId = st.roomId;
@@ -886,6 +907,7 @@ async function connectTikTokLive() {
     // รายการของขวัญของห้อง → จำรูปของขวัญจริงไว้ใช้ในแผงของขวัญ (ไม่รอ ไม่ทำให้เชื่อมต่อช้า)
     loadGiftList(st.roomId);
   } catch (err) {
+    if(config.theme==='templefair'&&(connection!==conn||!wantConnected))return;
     const msg = String(err?.message || err);
     const offline = /offline|not live|UserOffline/i.test(msg + (err?.constructor?.name || ''));
     log('error', `เชื่อมต่อไม่สำเร็จ: ${msg.slice(0, 200)}`);
@@ -895,9 +917,10 @@ async function connectTikTokLive() {
 
 function scheduleReconnect(reason) {
   if (!wantConnected) return;
-  setStatus('offline', `${reason} — ลองใหม่ใน 20 วินาที`);
+  const delay=fairConnection.retryMs(config.theme);
+  setStatus('offline', `${reason} — ลองใหม่ใน ${delay/1000} วินาที`);
   clearTimeout(reconnectTimer);
-  reconnectTimer = setTimeout(() => wantConnected && connectTikTok().catch(() => {}), 20_000);
+  reconnectTimer = setTimeout(() => wantConnected && connectTikTok().catch(() => {}), delay);
 }
 
 async function disconnectTikTok(updateStatus = true) {
@@ -977,6 +1000,7 @@ app.get('/themes/:file', async (req, res, next) => {
 // desktop/main.js ใช้ global นี้ตัดสินว่าจะเด้งหน้าต่างห้องควบคุมตอนเริ่มไลฟ์หรือไม่
 const controlOk = () => license.allowedThemes() === null;
 global.__liveStageControlOk = controlOk;
+global.__liveStageFairWaiting=()=>config.theme==='templefair'&&wantConnected&&config.autoConnect;
 app.get(['/control.html', '/control.js'], (req, res) => {
   const js = /\.js$/i.test(req.path);
   res.set('Cache-Control', 'no-store');
@@ -1265,6 +1289,7 @@ app.get('/theme-clips/:file', localOnly, async (req, res) => {
   res.sendFile(file, { maxAge: 0, headers: { 'Cache-Control': 'no-cache' } }, (e) => e && !res.headersSent && res.sendStatus(404));
 });
 // ใช้ตอนกดปิดโปรแกรม: ถ้ากำลังไลฟ์อยู่ให้ถามก่อน
+app.get('/api/fair/state', localOnly, (_req,res)=>res.set('Cache-Control','no-store').json({...fairBridge.snapshot(),activeViewers:audienceList(),theme:config.theme,status:state.status,gifts:themeSettings('templefair').gifts,effects:THEMES.templefair.effects}));
 app.get('/api/live-status', localOnly, (_req, res) => res.json({ status: state.status, viewers: state.viewers }));
 // ไฟล์บันทึกปัญหา (ส่งให้ทีมงานช่วยดู) — ไม่มีรหัส/โทเคน/API key
 app.get('/api/support-bundle', localOnly, (_req, res) => {
@@ -1380,6 +1405,7 @@ for (const [id, m] of Object.entries(THEMES)) if (m.mg === 'brawl') FAKE_COMMENT
 for (const [id, m] of Object.entries(THEMES)) if (m.mg === 'escape') FAKE_COMMENTS[id] = ['1', '2', '1', 'ซ้าย', 'ขวา', '2', 'วิ่ง', 'วิ่ง', 'น่ากลัวมาก', 'ไปทางไหนดี']; // เกมหนีออกจากตึก
 for (const [id, m] of Object.entries(THEMES)) if (m.molamStage) FAKE_COMMENTS[id] = [...m.hud.cmds.map((c) => c.c), 'กุหลาบ', 'ตี', 'ม่วนคัก', 'ร้องเพราะมาก', 'สวยมาก', 'โยกกก']; // เวทีหมอลำ 3D
 for (const [id, m] of Object.entries(THEMES)) if (m.mg === 'climb') FAKE_COMMENTS[id] = ['ฮึบ', 'ฮึบ', 'สู้ๆ', 'น้องเด้งสู้ๆ', 'ตกอีกแล้ว 555', 'ใกล้ถึงแล้ว', 'ฮึบ']; // เกมปีน
+FAKE_COMMENTS.templefair = ['สาธุ','ขอให้รวย','ไหว้พระ','เซียมซี','เดินเล่น','1','2','3','4'];
 FAKE_COMMENTS.cemetery = ['จุดเทียน', 'จุดเทียน', 'ขนลุกเลย', 'กลัวมากกก', 'ใครอยู่ตรงนั้น', 'อย่าหันหลังนะ', 'หลอนจัด'];
 FAKE_COMMENTS.ghostgate = ['จุดธูป', 'จุดธูป', 'ขนลุกเลย', 'กลัวมากกก', 'ประตูขยับ!', 'ได้ยินเสียงไหม', 'หลอนจัด'];
 for (const [id, m] of Object.entries(THEMES)) if (m.pet) FAKE_COMMENTS[id] = [...m.hud.cmds.map((c) => c.c), ...m.hud.cmds.filter((c) => c.kind === 'feed').map((c) => c.c), 'น่ารักจัง', 'อยากเลี้ยงบ้าง'];
@@ -1670,7 +1696,8 @@ for (const sig of ['SIGINT', 'SIGTERM']) {
   });
 }
 
-const THEME_FIELDS = ['title', 'subtitle', 'requestCommand', 'gifts', 'nowPlaying', 'artist', 'bpm', 'showPerformer', 'host'];
+let testCrowdGeneration=0,testCrowdSerial=0;
+const THEME_FIELDS = ['fair','title', 'subtitle', 'requestCommand', 'gifts', 'nowPlaying', 'artist', 'bpm', 'showPerformer', 'host'];
 
 io.on('connection', (socket) => {
   socket.emit('snapshot', snapshot());
@@ -1897,12 +1924,14 @@ io.on('connection', (socket) => {
     const meta = THEMES[tid];
     const cur = { ...(config.themes[tid] || {}) };
     for (const k of THEME_FIELDS) if (patch && k in patch) cur[k] = patch[k];
+    if(tid==='templefair'&&cur.fair)cur.fair={showSigns:cur.fair.showSigns!==false,ambient:cur.fair.ambient!==false,sound:cur.fair.sound!==false,paused:cur.fair.paused===true,music:{enabled:cur.fair.music?.enabled===true,id:String(cur.fair.music?.id||'').slice(0,80),loop:cur.fair.music?.loop!==false}};
     if ('bpm' in cur) cur.bpm = Math.min(200, Math.max(40, Number(cur.bpm) || 112));
     if (cur.gifts) {
       cur.gifts = cur.gifts
         .filter((g) => g && g.name)
         .map((g) => ({ name: String(g.name).trim(), diamonds: Number(g.diamonds) || 0, effect: meta.effects[g.effect] ? g.effect : Object.keys(meta.effects)[0] }));
     }
+    if(tid==='templefair'&&cur.gifts)cur.gifts=require('./fair-gifts').normalize(cur.gifts);
     config.themes[tid] = cur;
     saveConfig();
     io.emit('config', publicConfig());
@@ -1973,27 +2002,35 @@ io.on('connection', (socket) => {
     const list = FAKE_COMMENTS[config.theme] || FAKE_COMMENTS.concert;
     handleChat(fakeUser(name), text || list[Math.floor(Math.random() * list.length)]);
   });
-  socket.on('test:gift', ({ name, gift, count } = {}) => {
-    if (!testOk()) return;
-    const gifts = active().gifts;
-    const g = gifts.find((x) => x.name === gift) || gifts[0];
-    handleGift(fakeUser(name), { name: g.name, diamonds: g.diamonds, count: count || 1 });
+  socket.on('test:gift', ({ name, gift, count } = {},ack) => {
+    if (!testOk()) return ack?.({ok:false,error:'ปิดการจำลองระหว่างไลฟ์จริง'});
+    const g = active().gifts.find(x=>x.name===gift);
+    if(!g)return ack?.({ok:false,error:'ไม่พบของขวัญนี้ในธีมปัจจุบัน กรุณาโหลดหน้าทดสอบใหม่'});
+    if(config.theme==='templefair'&&!theme().effects[g.effect]?.activity)return ack?.({ok:false,error:'ของขวัญนี้ยังไม่ได้ผูกกิจกรรม กรุณาตั้งค่าในของขวัญ'});
+    handleGift(fakeUser(name), {name:g.name,diamonds:g.diamonds,count:count||1});
+    ack?.({ok:true,activity:theme().effects[g.effect]?.activity,activityLabel:theme().effects[g.effect]?.label});
   });
   socket.on('test:join', ({ name } = {}) => testOk() && handleJoin(fakeUser(name)));
-  socket.on('test:like', ({ name } = {}) => testOk() && handleLike(fakeUser(name), 15, 0));
+  socket.on('test:like', ({ name,count } = {},ack) => {if(!testOk())return ack?.({ok:false,error:'ปิดการจำลองระหว่างไลฟ์จริง'});const n=Number.isSafeInteger(count)&&count>0&&count<=1000?count:15;handleLike(fakeUser(name),n,0);ack?.({ok:true,likes:state.totalLikes});});
   socket.on('test:follow', ({ name } = {}) => testOk() && handleSocial(fakeUser(name), 'follow'));
   socket.on('test:share', ({ name } = {}) => testOk() && handleSocial(fakeUser(name), 'share'));
-  socket.on('test:crowd', () => {
-    if (!testOk()) return;
-    const shuffled = [...FAKE_NAMES].sort(() => Math.random() - 0.5).slice(0, 10);
-    shuffled.forEach((n, i) => setTimeout(() => handleJoin(fakeUser(n)), i * 250));
+  socket.on('test:crowd', (_payload, ack) => {
+    if (!testOk()) return ack?.({ok:false,error:'ปิดการจำลองระหว่างไลฟ์จริง'});
+    const generation=testCrowdGeneration, run=++testCrowdSerial;
+    const names=config.theme==='templefair'?Array.from({length:10},(_,i)=>'ผู้ชมจำลอง '+run+'-'+(i+1)):[...FAKE_NAMES].sort(()=>Math.random()-.5).slice(0,10);
+    names.forEach((name,i)=>setTimeout(()=>{if(generation!==testCrowdGeneration||wantConnected||state.status==='connected')return;handleJoin({...fakeUser(name),character:i%4});},i*150));
+    ack?.({ok:true,count:names.length});
   });
+  const resetPreview=()=>{if(!testOk())return{ok:false,error:'ปิดการล้างฉากทดสอบระหว่างไลฟ์จริง'};
+    const result=config.theme==='templefair'?fairBridge.resetTest():{ok:true};if(!result.ok)return result;testCrowdGeneration++;
+    state.audience.clear();state.leaderboard.clear();state.requests=[];state.hype=0;resetCounters();resetShareGoal();
+    if(result.snapshot){fairLastSession=result.snapshot.sessionId;io.emit('themeEvent',{type:'fairSession',snapshot:{...result.snapshot,activeViewers:[]}});}
+    io.emit('snapshot',snapshot());log('system','ล้างฉากทดสอบและคิวกิจกรรมแล้ว');return{ok:true,sessionId:result.snapshot?.sessionId};
+  };
+  socket.on('test:reset',(_payload,ack)=>{const result=resetPreview();ack?.(result);});
+  socket.on('test:fairActivities',(_payload,ack)=>{if(!testOk())return ack?.({ok:false,error:'ปิดการจำลองระหว่างไลฟ์จริง'});if(config.theme!=='templefair')return ack?.({ok:false,error:'กิจกรรมนี้สำหรับธีมงานวัด'});const run=++testCrowdSerial;const activities=['sparklers','water','lantern','wheel','dance','sangha'];for(const [i,activity]of activities.entries()){const gift=(active().gifts||[]).find(g=>theme().effects[g.effect]?.activity===activity);if(gift)handleGift(fakeUser('กิจกรรมทดลอง '+run+'-'+(i+1)),{...gift,count:1});}return ack?.({ok:true});});
+  socket.on('admin:clearAudience',(_payload,ack)=>{if(config.theme==='templefair'){const result=resetPreview();ack?.(result);return;}state.audience.clear();io.emit('snapshot',snapshot());log('system','ให้ทุกคนออกจากฉาก');ack?.({ok:true});});
 
-  socket.on('admin:clearAudience', () => {
-    state.audience.clear();
-    io.emit('snapshot', snapshot());
-    log('system', 'ให้ทุกคนออกจากฉาก');
-  });
   socket.on('admin:clearTop', () => {
     state.leaderboard.clear();
     for (const a of state.audience.values()) a.vip = false;
@@ -2009,6 +2046,7 @@ io.on('connection', (socket) => {
     io.emit('requests', state.requests);
   });
   socket.on('admin:effect', (effect) => {
+    if(config.theme==='templefair'){if(!testOk())return;const activity=THEMES.templefair.effects[effect]?.activity;if(activity)fairBridge.push('gift',{id:'fair-operator',name:'ผู้จัดงานทดลอง'},{giftId:'live:'+activity,quantity:1});return;}
     const th = theme();
     const e = th.effects[effect];
     if (!e) return;

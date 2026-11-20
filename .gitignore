@@ -29,3 +29,6 @@ custom/characters/source/
 EXPORT-README.txt
 # Machine-specific live account diagnostic
 tools/connect-current-account-check.cjs
+# Generated character test recordings
+src/public/characters/fair-v1/examples/*.mp4
+src/public/characters/fair-v1/examples/*.webm

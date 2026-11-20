@@ -169,14 +169,26 @@
       row.innerHTML = `<div class="ico"></div><div class="txt"><div class="eff"></div><div class="gname"></div></div>`;
       const icon = window.giftIcon(g.name);
       if (icon) {
-        row.querySelector('.ico').innerHTML = `${window.giftIconHtml(g.name)}<span class="fx"></span>`;
-        row.querySelector('.ico .fx').textContent = ui.icon;
+        row.querySelector('.ico').innerHTML = window.giftIconHtml(g.name);
+        if(config.theme!=='templefair'){const badge=document.createElement('span');badge.className='fx';badge.textContent=ui.icon;row.querySelector('.ico').append(badge);}
       } else row.querySelector('.ico').textContent = ui.icon;
       row.querySelector('.eff').textContent = ui.label.replace(/ เต็มจอ$| โชว์ใหญ่เต็มจอ$/, '');
       // ไม่บอกราคา — รูปของขวัญจริงพอ • ยังไม่มีรูป (ยังโหลดรายการจาก TikTok ไม่ได้) ค่อยบอกชื่อ
-      if (icon) row.querySelector('.gname').remove();
-      else row.querySelector('.gname').textContent = g.name;
+      if (icon&&config.theme!=='templefair') row.querySelector('.gname').remove();
+      else row.querySelector('.gname').textContent = THEME_ID==='templefair'?g.diamonds+' เหรียญ':g.name;
+      if(THEME_ID==='templefair')row.title=g.name+' · '+g.diamonds+' เหรียญ';
       box.appendChild(row);
+    }
+    if(THEME_ID==='templefair'){
+      const rows=[...box.querySelectorAll('.gift-row')];box.replaceChildren();
+      for(let i=0;i<2;i++){
+        const half=document.createElement('section');half.className='fair-gift-half';
+        for(const row of rows.slice(i*4,i*4+4)){
+          const price=row.querySelector('.gname');price.textContent=price.textContent.replace(' เหรียญ','');
+          const coin=document.createElement('span');coin.textContent='🪙';price.append(coin);half.append(row);
+        }
+        const hint=document.createElement('div');hint.className='fair-mini-command';hint.textContent=i?'เซียมซี · เสี่ยงทาย':'สาธุ · สังฆทาน';half.append(hint);box.append(half);
+      }
     }
   }
 
@@ -419,6 +431,7 @@
   const zoomable = (f) => f?.slot && f.slot.y < 1900 && !f.el.classList.contains('kq') && crowdShown();
   // r = { id, total, name, gift, focus(f) → [x, y, headY], onZoom, done, force }  • คืน true ถ้าเข้าคิวซูม (แล้ว done จะถูกเรียกเสมอ)
   function zoomReq(r) {
+    if(META?.fair)return false;
     const Z = zcfg();
     if (!r.force && (!Z.enabled || r.total < Z.min)) return false;
     if (!zoomable(fans.get(r.id)) || zoomOn?.id === r.id || zoomQ.some((x) => x.id === r.id)) return false;
@@ -905,6 +918,8 @@
   }
 
   function fireworks(n = 5, opt = {}) {
+    if (THEME_ID === 'templefair') return; // The fair owns its ten-shell show, depth and water launch point.
+
     const { y0 = 1080, yMin = 280, yMax = 720, xMin = 160, xMax = 920, colors = PALETTE } = opt;
     for (let i = 0; i < n; i++) {
       setTimeout(() => {
@@ -1095,12 +1110,36 @@
   try {
     actx = new (window.AudioContext || window.webkitAudioContext)();
   } catch {}
+  const fairAudioGate=actx?actx.createGain():null;if(fairAudioGate)fairAudioGate.connect(actx.destination);
   const master = actx ? actx.createGain() : null;
   if (master) {
     master.gain.value = 0.45;
-    master.connect(actx.destination);
+    master.connect(fairAudioGate||actx.destination);
   }
-  const ok = () => !SILENT && actx && config?.sound && actx.state === 'running';
+  // Temple fair uses one audible renderer across OBS, Studio and previews.
+  const FAIR_AUDIO={allowed:false,candidate:null,since:0,owner:null};let speechCancel=null;
+  const fairAudioAllowed=()=>THEME_ID!=='templefair'||(!SILENT&&!THUMB&&FAIR_AUDIO.allowed);
+  function fairAudioChoice(stages,t=Date.now()){
+    return stages.filter(s=>s.theme==='templefair'&&!s.silent&&!s.thumb&&!s.mobile&&t-s.at<12000)
+      .sort((a,b)=>{const rank=s=>/TikTok LIVE Studio/i.test(s.ua)?0:/OBS/i.test(s.ua)?1:2;return rank(a)-rank(b)||a.since-b.since||a.id.localeCompare(b.id)})[0]?.id||null;
+  }
+  function fairAudioSet(allowed){
+    if(FAIR_AUDIO.allowed===allowed)return;FAIR_AUDIO.allowed=allowed;if(fairAudioGate)fairAudioGate.gain.value=allowed?1:0;
+    if(!allowed){sayQ.length=0;for(const h of giftHold.values())clearTimeout(h.timer);giftHold.clear();speechCancel?.();plStop();for(const el of PL.els){el.pause();el.volume=0;}PL.pending=false;PL.fairDancing=false;}
+    else{socket.emit('music:hello');const count=window.__templeFair?.crowd?.director.actors.filter(a=>a.zone==='dance'&&a.state==='active').length||0;fairDanceMusic(count);}
+    applyMusic();stageStat(true);
+  }
+  function fairAudioPoll(){
+    if(THEME_ID!=='templefair'||SILENT||THUMB||!socket.connected)return;
+    socket.emit('pre:get',null,r=>{if(!(r?.stages||[]).some(s=>s.id===socket.id&&s.theme==='templefair')){stageStat(true);return;}const id=fairAudioChoice(r?.stages||[]);FAIR_AUDIO.owner=id;
+      if(id!==FAIR_AUDIO.candidate){FAIR_AUDIO.candidate=id;FAIR_AUDIO.since=now();}
+      // A new speaker waits for old renderers to observe the change and stop first.
+      fairAudioSet(id===socket.id&&now()-FAIR_AUDIO.since>=2200);if(FAIR_AUDIO.allowed)socket.emit('music:hello');
+    });
+  }
+  setInterval(fairAudioPoll,1000);
+  window.__fairAudio=FAIR_AUDIO;
+  const ok = () => !SILENT && fairAudioAllowed() && actx && config?.sound && actx.state === 'running';
 
   function tone(freq, start, dur, type = 'sine', vol = 0.3) {
     const o = actx.createOscillator();
@@ -1252,16 +1291,17 @@
   };
 
   // ============================================================ ดนตรีพื้นหลัง (public/music.js)
-  const music = actx && window.StageMusic && !SILENT && !THUMB ? StageMusic.create(actx, actx.destination) : null;
+  const music = actx && window.StageMusic && !SILENT && !THUMB ? StageMusic.create(actx, fairAudioGate||actx.destination) : null;
   function applyMusic() {
     if (!music || !config) return;
+    if(fairAudioGate)fairAudioGate.gain.value=fairAudioAllowed()?1:0;
     const m = config.music || {};
     const id = m.style && m.style !== 'auto' && StageMusic.has(m.style) ? m.style : StageMusic.has(THEME_ID) ? THEME_ID : StageMusic.has(META.alias) ? META.alias : 'concert';
     // คอนเสิร์ต: ใช้ BPM ที่ตั้งไว้ในธีม ไฟเวทีจะเต้นตรงกับเพลง
     const bpm = id === 'concert' && THEME_ID === 'concert' ? Number(T.bpm || TH?.bpm) || 0 : 0;
     const quiet = META?.noMusic && (!m.style || m.style === 'auto'); // ธีมที่ไม่ควรมีเพลง (มัสยิด) — เลือกเพลงเองได้
-    const songOn = PL.playing && config.playlist?.stopBg !== false; // เพลย์ลิสต์เล่นอยู่ → พักดนตรีพื้นหลัง
-    music.set({ style: id, volume: m.volume ?? 0.35, enabled: !!m.enabled && !quiet && !songOn, bpm });
+    const songOn = PL.playing && (config.playlist?.stopBg !== false || THEME_ID === 'templefair'); // เพลย์ลิสต์เล่นอยู่ → พักดนตรีพื้นหลัง
+    music.set({ style: id, volume: m.volume ?? 0.35, enabled: !!m.enabled && fairAudioAllowed() && !quiet && !songOn, bpm });
   }
   const duckMusic = (on) => {
     PL.duck = on;
@@ -1303,7 +1343,7 @@
   }
   function plPlay(id) {
     const it = plItems().find((x) => x.id === id);
-    if (!it || !PLAYER) return;
+    if (!it || !PLAYER || !fairAudioAllowed()) return;
     const old = PL.cur;
     const el = PL.els[0] === old ? PL.els[1] : PL.els[0];
     el.src = '/music-files/' + encodeURIComponent(it.file);
@@ -1311,13 +1351,13 @@
     PL.cur = el;
     PL.id = id;
     PL.playing = true;
-    if (old && !(plCfg().fade > 0)) old.pause();
+    if (old && (THEME_ID==='templefair'||!(plCfg().fade > 0))) old.pause();
     plStart(el);
     applyMusic();
     plReport();
   }
   function plResume() {
-    if (!PL.cur || !PL.id) return plPlay((plItems()[0] || {}).id);
+    if (!PL.cur || !PL.id) return plPlay((THEME_ID === 'templefair' && PL.fairId) || (plItems()[0] || {}).id);
     PL.playing = true;
     plStart(PL.cur);
     applyMusic();
@@ -1333,7 +1373,28 @@
     applyMusic();
     plReport();
   }
+  function applyFairMusic() {
+    if (!PLAYER || THEME_ID !== 'templefair') return;
+    const binding = T?.fair?.music;
+    const item = binding?.enabled && plItems().find(x => x.id === binding.id);
+    const key = item?.id || null;
+    PL.fairLoop = binding?.loop !== false;
+    if (key === (PL.fairKey || null)) return; // Saving unrelated settings must not restart music.
+    const owned = PL.id && PL.id === PL.fairId;
+    PL.fairKey = key;PL.fairId = key;
+    if (key && PL.fairDancing) plPlay(key);
+    else if (owned) plStop();
+  }
+  function fairDanceMusic(count) {
+    if (!PLAYER || THEME_ID !== 'templefair' || !fairAudioAllowed()) return;
+    const dancing = Number(count) > 0;
+    if (dancing === !!PL.fairDancing) return;
+    PL.fairDancing = dancing;
+    if (dancing && PL.fairId) plPlay(PL.fairId);
+    else if (!dancing && PL.id === PL.fairId) plStop();
+  }
   function plNext(auto) {
+    if (auto && THEME_ID === 'templefair' && PL.fairLoop && PL.id === PL.fairId && plItems().some(x => x.id === PL.fairId)) return plPlay(PL.fairId);
     const items = plItems();
     if (!items.length) return plStop();
     const i = items.findIndex((x) => x.id === PL.id);
@@ -1368,7 +1429,7 @@
   }
   let plLast = 0;
   function plReport() {
-    if (!PLAYER) return;
+    if (!PLAYER || !fairAudioAllowed()) return;
     plLast = now();
     const el = PL.cur;
     socket.emit('music:status', { id: PL.id, playing: PL.playing && !PL.blocked, blocked: PL.blocked && PL.playing, pos: el ? el.currentTime : 0, dur: el && Number.isFinite(el.duration) ? el.duration : 0 });
@@ -1382,8 +1443,8 @@
     PL.els = [plEl(), plEl()];
     setInterval(plTick, 50);
     setInterval(() => now() - plLast > 900 && plReport(), 1000);
-    socket.on('connect', () => socket.emit('music:hello'));
-    if (socket.connected) socket.emit('music:hello');
+    socket.on('connect', () => {if(fairAudioAllowed())socket.emit('music:hello')});
+    if (socket.connected && fairAudioAllowed()) socket.emit('music:hello');
     socket.on('music:cmd', (c) => {
       const a = c?.action;
       if (a === 'play') return c.id ? plPlay(c.id) : PL.playing ? null : plResume();
@@ -1502,7 +1563,7 @@
         AV.analyser = actx.createAnalyser();
         AV.analyser.fftSize = 512;
         AV.buf = new Float32Array(512);
-        AV.analyser.connect(actx.destination);
+        AV.analyser.connect(fairAudioGate||actx.destination);
       }
       actx.createMediaElementSource(audio).connect(AV.analyser);
       AV.routed = true; // ประโยคนี้วัดระดับเสียงได้
@@ -1624,7 +1685,7 @@
     }
   }
   function enqueue(item) {
-    if (SILENT || !item.text) return;
+    if (SILENT || !fairAudioAllowed() || !item.text) return;
     sayQ.push(item);
     sayQ.sort((a, b) => b.prio - a.prio);
     // คิวยาวเกิน: ทิ้งอันที่สำคัญน้อย แล้วรวบคำขอบคุณของขวัญเป็นประโยคเดียว
@@ -1642,6 +1703,7 @@
   }
   async function nextSay() {
     const it = sayQ.shift();
+    if (THEME_ID==='templefair'&&!fairAudioAllowed()){sayQ.length=0;saying=false;duckMusic(false);return;}
     if (!it) {
       saying = false;
       duckMusic(false);
@@ -1686,8 +1748,10 @@
         if (done) return;
         done = true;
         clearTimeout(to);
+        if(THEME_ID==='templefair'){a.pause();a.onended=a.onerror=null;if(speechCancel===cancel)speechCancel=null;}
         err ? reject(err) : resolve();
       };
+      const cancel=()=>fin();if(THEME_ID==='templefair')speechCancel=cancel;
       const to = setTimeout(() => fin(new Error('timeout')), 15000 + text.length * 150);
       a.onended = () => fin();
       a.onerror = () => fin(new Error('audio error'));
@@ -1702,10 +1766,10 @@
       if (thVoice) u.voice = thVoice;
       u.rate = t.rate || 1;
       u.volume = t.volume ?? 0.9;
-      u.onend = () => resolve();
-      u.onerror = () => resolve();
-      speechSynthesis.speak(u);
-      setTimeout(resolve, 15000);
+      if(THEME_ID==='templefair'){
+        let done=false;const finish=(stop=false)=>{if(done)return;done=true;clearTimeout(timer);if(stop)speechSynthesis.cancel();if(speechCancel===cancel)speechCancel=null;resolve();},cancel=()=>finish(true),timer=setTimeout(cancel,15000);
+        speechCancel=cancel;u.onend=()=>finish();u.onerror=()=>finish(true);speechSynthesis.speak(u);
+      }else{u.onend=()=>resolve();u.onerror=()=>resolve();speechSynthesis.speak(u);setTimeout(resolve,15000);}
     });
   }
 
@@ -2537,6 +2601,7 @@
   // ============================================================ API ให้ธีมใช้
   const api = {
     W: 1080, H: 1920, PALETTE,
+    fairDanceMusic,
     rand, pick, hexA, shade, hash, rr, wrapText, now, fmt,
     get t() { return T; },
     get meta() { return META; },
@@ -2872,6 +2937,7 @@
 
   // ============================================================ socket
   const socket = io();
+  socket.on('disconnect',()=>{if(THEME_ID==='templefair')fairAudioSet(false)});
   plInit(); // เพลงในไลฟ์
   socket.on('games', (g) => TH && setGames(g));
   socket.on('themeEvent', (d) => TH && TH.onEvent?.(d, api));
@@ -2991,6 +3057,7 @@
     T = config.themes[THEME_ID].t;
     applyTexts();
     applyMusic();
+    applyFairMusic();
     applySafeArea();
     applyAvatar();
     applyPfp();
@@ -3007,6 +3074,7 @@
     renderRequests(s.requests || []);
     setHype(s.hype, s.config.hypeGoal);
     if (s.games) setGames(s.games);
+    TH.onSnapshot?.(s, api);
     for (const a of s.audience) setLevel(a.id, a.lv || 1);
   }
   // รูปโปรไฟล์คนดู: off / small (ข้างชื่อ) / big (เหนือหัว) — เปลี่ยนตอนไลฟ์ได้ทันที
@@ -3024,6 +3092,7 @@
     T = c.themes[THEME_ID].t;
     applyTexts();
     applyMusic();
+    applyFairMusic();
     applySafeArea();
     applyAvatar();
     applyPfp();
@@ -3049,7 +3118,7 @@
     sayJoin(a);
     avatarReact('join', a);
   });
-  socket.on('leave', ({ id }) => removeFan(id));
+  socket.on('leave', ({ id }) => { TH?.onLeave?.({id}, api); removeFan(id); });
   socket.on('vip', ({ id, vip }) => setVip(id, vip));
   socket.on('chat', (d) => {
     if (!TH) return;
@@ -3161,7 +3230,7 @@
   function renderScene() {
     const el = $('sceneBar');
     const d = SCENE;
-    if (!TH || THUMB || !d.enabled || !window.SceneLevels) {
+    if (!TH || THUMB || !d.enabled || !window.SceneLevels?.label(sceneId(), 2)) {
       el.style.display = 'none';
       return;
     }
@@ -3172,9 +3241,9 @@
       $('sFill').style.width = '100%';
       return;
     }
-    const name = SceneLevels.label(sceneId(), d.level + 1) || 'ฉากใหม่';
+    const name = SceneLevels.label(sceneId(), d.level + 1);
     const k = Math.max(d.likes / Math.max(1, d.next.likes), d.diamonds / Math.max(1, d.next.diamonds));
-    $('sLabel').textContent = `🏮 ฉากถัดไป • ${name}`;
+    $('sLabel').textContent = `🏮 ขั้น ${d.level} • ถัดไป: ${name}`;
     $('sVal').textContent = `${fmtN(Math.min(d.likes, d.next.likes))} / ${fmtN(d.next.likes)} ❤`;
     $('sFill').style.width = Math.min(100, k * 100) + '%';
   }
@@ -3196,7 +3265,7 @@
   // รูปของขวัญจริงจาก TikTok (เซิร์ฟเวอร์จำลิงก์ไว้ตอนเชื่อมต่อไลฟ์) — ทุกธีมเรียกใช้ได้: window.giftIcon('Rose') → ลิงก์รูป หรือ ''
   // window.giftIconHtml('Rose', '🌹') → <img> รูปจริง หรืออีโมจิสำรอง (ยังไม่เคยเชื่อมต่อ/ทดสอบก่อนไลฟ์ครั้งแรก)
   let giftIconsLive = null;
-  window.giftIcon = (name) => (giftIconsLive || config?.giftIcons || {})[String(name || '').trim().toLowerCase()] || '';
+  window.giftIcon = (name) => {const key=String(name||'').trim().toLowerCase();if(config?.theme==='templefair'){const gift=(T?.gifts||[]).find(g=>String(g.name).toLowerCase()===key||g.aliases?.some(a=>a.toLowerCase()===key));if(gift?.image)return gift.image;}return (giftIconsLive || config?.giftIcons || {})[key] || '';};
   window.giftIconHtml = (name, fallback = '🎁', cls = 'gicon') => {
     const u = window.giftIcon(name);
     return u ? `<img class="${cls}" src="${esc(u)}" referrerpolicy="no-referrer" alt="">` : esc(fallback);
@@ -3454,7 +3523,7 @@
     const dpr = window.devicePixelRatio || 1;
     socket.emit('stage:stat', {
       silent: SILENT, thumb: THUMB, mobile: MOBILE, theme: THEME_ID, w: de.clientWidth, h: de.clientHeight, dpr, px: Math.round(1080 * s * dpr),
-      audio: !SILENT && !!actx && actx.state === 'running' && !audioBlocked, fps: PERF.fps, qual: PERF.q, ua: uaShort(), changed,
+      audio: !SILENT && fairAudioAllowed() && !!actx && actx.state === 'running' && !audioBlocked, fps: PERF.fps, qual: PERF.q, ua: uaShort(), changed,
     });
   }
   socket.on('connect', () => {
@@ -3601,3 +3670,6 @@
   };
   window.__stage = { runEffect, fans, api, music, refreshTheme };
 })();
+
+
+

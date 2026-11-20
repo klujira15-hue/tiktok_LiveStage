@@ -1,0 +1,940 @@
+{
+  "version": 39,
+  "status": "templefair-live-integrated",
+  "columns": 4,
+  "rows": 2,
+  "framesPerCharacter": 8,
+  "anchor": "bottom-center",
+  "rendering": "runtime canvas chroma-key from unchanged original sheets",
+  "notes": [
+    "หนุ่มหมวกฟางไม่มีท่าไหว้/ส่งหัวใจในชุดนี้",
+    "สาวชุดไทยท่าไหว้เป็นการพนมมือเหนือศีรษะตามต้นฉบับ",
+    "ไม่ได้เปลี่ยนธีมหรือ avatar ของไลฟ์ปัจจุบัน",
+    "เพิ่ม 12 ภาพกิจกรรมต่อตัว พร้อมท่านั่ง ไหว้ และถืออุปกรณ์; เป็นหน้าทดลอง ยังไม่เชื่อมกิจกรรม LIVE",
+    "v4: ภาพเดินหน้าและหลังจริงครบ 4 ตัว; เลือกมุมตามแกนการเคลื่อนที่; ท่าไหว้และท่าเต้นแยกภาพและจังหวะเฉพาะตัว",
+    "v5: ภาพไหว้เห็นด้านหลังหันขึ้นซ้ายเข้าหาพระ; รำวง 4 ภาพต่างท่าต่อตัว; วิดีโอตรวจบนฉากจริง",
+    "v6: ชุดเต้นจากภาพผู้ใช้เพิ่ม 4 ท่าต่อตัว ไม่รวมท่าไหว้; danceMix รวม 4 ท่ารำวงกับชุดใหม่เป็น 8 ท่าต่อตัว",
+    "v39: ท่าเต้นร่วมสมัยกวน ๆ ตัวละ 4 ท่าเฉพาะตัว ภาพเคลื่อนไหวใหม่ 16 เฟรมต่อตัว โชว์ 30 วินาที เฉพาะงานวัด"
+  ],
+  "characters": [
+    {
+      "id": "boy-strawhat",
+      "name": "หนุ่มหมวกฟาง",
+      "source": "source/boy-strawhat.png",
+      "width": 1774,
+      "height": 887,
+      "sha256": "7f55383959f3a3db08dadf868a6eadfbc398f6c9a1d4f6fe003de4093eb26871",
+      "actions": {
+        "idle": {
+          "frames": [
+            0
+          ],
+          "step": 460
+        },
+        "dance": {
+          "frames": [
+            0,
+            4,
+            1,
+            5,
+            2,
+            6,
+            3,
+            7
+          ],
+          "step": 380
+        },
+        "greet": {
+          "frames": [
+            1,
+            5,
+            7
+          ],
+          "step": 720
+        },
+        "cheer": {
+          "frames": [
+            3,
+            7,
+            5
+          ],
+          "step": 500
+        },
+        "point": {
+          "frames": [
+            6
+          ],
+          "step": 800
+        }
+      },
+      "walk": {
+        "source": "source/walk-cycle-v2.png",
+        "columns": 4,
+        "rows": 4,
+        "row": 3,
+        "step": 160
+      },
+      "activities": {
+        "source": "source/boy-strawhat-activities-v3.png",
+        "columns": 4,
+        "rows": 3,
+        "standingFrame": 0,
+        "sparklerSide": 1,
+        "releaseSide": 1
+      },
+      "walkViews": {
+        "source": "source/boy-strawhat-walk-front-back-v4.png",
+        "columns": 4,
+        "rows": 2,
+        "step": 180,
+        "chromaKey": true,
+        "sha256": "e48171969bfbafd090fdf6d9caaed4b08b2173e31434455ecb05523a08692317"
+      },
+      "signature": {
+        "source": "source/boy-strawhat-signature-v5.png",
+        "label": "ไหว้ยืนหันเข้าพระ · รำวงมือเท้าเอว/แขนโค้ง/สลับข้าง 4 ท่า",
+        "prayer": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            900,
+            500,
+            900,
+            600
+          ]
+        },
+        "dance": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            280,
+            230,
+            280,
+            230
+          ]
+        },
+        "sha256": "c258bbe00d1466546541ffd72e0ac59e4a5c07a8bd6df7aea3a1bad80df68a3f",
+        "prayerFacing": "back-left"
+      },
+      "extraDance": {
+        "name": "ลูกทุ่งขี้เล่น",
+        "frames": [
+          0,
+          4,
+          6,
+          3
+        ],
+        "durations": [
+          500,
+          450,
+          600,
+          500
+        ],
+        "poseNames": [
+          "เท้าเอวโยกเข่า",
+          "แตะส้นเท้าออกข้าง",
+          "ชี้สองมือสลับไหล่",
+          "ไขว้แขนเหนือศีรษะยกเข่า"
+        ],
+        "exclude": [],
+        "source": "source/boy-strawhat.png",
+        "sha256": "7f55383959f3a3db08dadf868a6eadfbc398f6c9a1d4f6fe003de4093eb26871"
+      },
+      "danceShow": {
+        "source": "source/boy-strawhat-dance-show-v39.png",
+        "columns": 4,
+        "rows": 4,
+        "duration": 30000,
+        "label": "สายสับเท้าขี้กวน",
+        "moves": [
+          {
+            "id": "boy-strawhat:heel-toe",
+            "label": "ส้น–ปลายเท้าสลับ",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "cycleMs": 500
+          },
+          {
+            "id": "boy-strawhat:sneak-groove",
+            "label": "ย่องโยกเข่า",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "cycleMs": 640
+          },
+          {
+            "id": "boy-strawhat:hat-running-man",
+            "label": "จับหมวกวิ่งอยู่กับที่",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "cycleMs": 500
+          },
+          {
+            "id": "boy-strawhat:low-skater",
+            "label": "สไลด์ขาข้างสลับ",
+            "frames": [
+              12,
+              13,
+              14,
+              15
+            ],
+            "cycleMs": 640
+          }
+        ],
+        "phrases": [
+          {
+            "move": 0,
+            "ms": 5000
+          },
+          {
+            "move": 1,
+            "ms": 5000
+          },
+          {
+            "move": 2,
+            "ms": 5000
+          },
+          {
+            "move": 3,
+            "ms": 5000
+          },
+          {
+            "move": 0,
+            "ms": 2500
+          },
+          {
+            "move": 2,
+            "ms": 2500
+          },
+          {
+            "move": 1,
+            "ms": 2500
+          },
+          {
+            "move": 3,
+            "ms": 2500
+          }
+        ]
+      }
+    },
+    {
+      "id": "girl-thai",
+      "name": "สาวชุดไทย",
+      "source": "source/girl-thai.png",
+      "width": 1774,
+      "height": 887,
+      "sha256": "e71f9abb1eae2a61c7ae3011b7201bf942f1520731eb368849ca6f7b770d0f55",
+      "actions": {
+        "idle": {
+          "frames": [
+            5
+          ],
+          "step": 460
+        },
+        "dance": {
+          "frames": [
+            1,
+            2,
+            3,
+            4,
+            6,
+            7,
+            1,
+            0
+          ],
+          "step": 470
+        },
+        "greet": {
+          "frames": [
+            3,
+            7
+          ],
+          "step": 720
+        },
+        "wai": {
+          "frames": [
+            0
+          ],
+          "step": 1000
+        },
+        "point": {
+          "frames": [
+            7
+          ],
+          "step": 800
+        }
+      },
+      "walk": {
+        "source": "source/walk-cycle-v2.png",
+        "columns": 4,
+        "rows": 4,
+        "row": 2,
+        "step": 160
+      },
+      "activities": {
+        "source": "source/girl-thai-activities-v3.png",
+        "columns": 4,
+        "rows": 3,
+        "standingFrame": 0,
+        "sparklerSide": -1,
+        "releaseSide": -1
+      },
+      "walkViews": {
+        "source": "source/girl-thai-walk-front-back-v4.png",
+        "columns": 4,
+        "rows": 2,
+        "step": 180,
+        "chromaKey": true,
+        "sha256": "a01686c10e83aafe2deb4db8bdb73a874fab48b2b288f0ddb82f215bcd132525"
+      },
+      "signature": {
+        "source": "source/girl-thai-signature-v5.png",
+        "label": "นั่งพับเพียบหันเข้าพระ · รำมือโค้งเหนือศีรษะ/วงมือหน้าอก/สลับแขน/จีบข้างขมับ",
+        "prayer": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            1000,
+            1200,
+            1800,
+            1000
+          ]
+        },
+        "dance": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            950,
+            650,
+            950,
+            650
+          ]
+        },
+        "sha256": "ce3793f4478bd4696eb2ec8f75b0478052e8ddf986cbb186ea5922a0e8dbab21",
+        "prayerFacing": "back-left"
+      },
+      "extraDance": {
+        "name": "รำไทยจีบมือ",
+        "frames": [
+          1,
+          2,
+          4,
+          7
+        ],
+        "durations": [
+          900,
+          800,
+          1000,
+          900
+        ],
+        "poseNames": [
+          "วงแขนเหนือศีรษะ",
+          "จีบมือสองข้างก้าวออก",
+          "ส่งมือคู่ไปข้างหน้า",
+          "ตั้งวงข้างแก้มส่งแขน"
+        ],
+        "exclude": [
+          0
+        ],
+        "source": "source/girl-thai.png",
+        "sha256": "e71f9abb1eae2a61c7ae3011b7201bf942f1520731eb368849ca6f7b770d0f55"
+      },
+      "danceShow": {
+        "source": "source/girl-thai-dance-show-v39.png",
+        "columns": 4,
+        "rows": 4,
+        "duration": 30000,
+        "label": "สายไหล่สะโพกหน้านิ่ง",
+        "moves": [
+          {
+            "id": "girl-thai:shoulder-isolation",
+            "label": "สะบัดไหล่เท้าเอว",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "cycleMs": 640
+          },
+          {
+            "id": "girl-thai:folded-hip-eight",
+            "label": "กอดอกโยกสะโพก",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "cycleMs": 800
+          },
+          {
+            "id": "girl-thai:chicken-elbows",
+            "label": "ศอกปีกไก่",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "cycleMs": 500
+          },
+          {
+            "id": "girl-thai:torso-head-flick",
+            "label": "เอียงตัวสะบัดหัว",
+            "frames": [
+              12,
+              13,
+              14,
+              15
+            ],
+            "cycleMs": 800
+          }
+        ],
+        "phrases": [
+          {
+            "move": 0,
+            "ms": 5000
+          },
+          {
+            "move": 1,
+            "ms": 5000
+          },
+          {
+            "move": 2,
+            "ms": 5000
+          },
+          {
+            "move": 3,
+            "ms": 5000
+          },
+          {
+            "move": 0,
+            "ms": 2500
+          },
+          {
+            "move": 2,
+            "ms": 2500
+          },
+          {
+            "move": 1,
+            "ms": 2500
+          },
+          {
+            "move": 3,
+            "ms": 2500
+          }
+        ]
+      }
+    },
+    {
+      "id": "girl-pink",
+      "name": "สาวเสื้อชมพู",
+      "source": "source/girl-pink.png",
+      "width": 1774,
+      "height": 887,
+      "sha256": "f485f989c1ea07bddf3b62ea8d5b2ba6915dbcaac3fb0f80549932a7ca04f8c6",
+      "actions": {
+        "idle": {
+          "frames": [
+            7
+          ],
+          "step": 460
+        },
+        "dance": {
+          "frames": [
+            0,
+            2,
+            5,
+            7,
+            2,
+            0,
+            5,
+            7
+          ],
+          "step": 430
+        },
+        "greet": {
+          "frames": [
+            0,
+            3
+          ],
+          "step": 700
+        },
+        "heart": {
+          "frames": [
+            1
+          ],
+          "step": 950
+        },
+        "wai": {
+          "frames": [
+            4
+          ],
+          "step": 1000
+        },
+        "cheer": {
+          "frames": [
+            5
+          ],
+          "step": 600
+        },
+        "kiss": {
+          "frames": [
+            6
+          ],
+          "step": 1000
+        },
+        "point": {
+          "frames": [
+            2
+          ],
+          "step": 800
+        }
+      },
+      "walk": {
+        "source": "source/walk-cycle-v2.png",
+        "columns": 4,
+        "rows": 4,
+        "row": 1,
+        "step": 160
+      },
+      "activities": {
+        "source": "source/girl-pink-activities-v3.png",
+        "columns": 4,
+        "rows": 3,
+        "standingFrame": 0,
+        "sparklerSide": -1,
+        "releaseSide": 1
+      },
+      "walkViews": {
+        "source": "source/girl-pink-walk-front-back-v4.png",
+        "columns": 4,
+        "rows": 2,
+        "step": 180,
+        "chromaKey": false,
+        "sha256": "c45c2a0d87e00ca1cf981539436717430ff55131d7b6a80abca3a83b5a9960ce"
+      },
+      "signature": {
+        "source": "source/girl-pink-signature-v5.png",
+        "label": "ไหว้ย่อเข่าหันเข้าพระ · รำวงแขนโค้งซ้าย/กางแขนต่ำ/แขนโค้งขวา/วงแขนต่างระดับ",
+        "prayer": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            700,
+            500,
+            700,
+            500
+          ]
+        },
+        "dance": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            420,
+            280,
+            420,
+            280
+          ]
+        },
+        "sha256": "775050c2787cfd56946b0ed3c0c97dac3c3dc1429df177b9b17492630e8e094e",
+        "prayerFacing": "back-left"
+      },
+      "extraDance": {
+        "name": "ป๊อปหวานสดใส",
+        "frames": [
+          1,
+          3,
+          6,
+          2
+        ],
+        "durations": [
+          650,
+          550,
+          650,
+          500
+        ],
+        "poseNames": [
+          "หัวใจระดับอก",
+          "แตะแก้มขยิบตา",
+          "ส่งจูบไขว้เท้า",
+          "ชี้มือก้าวแตะ"
+        ],
+        "exclude": [
+          4
+        ],
+        "source": "source/girl-pink.png",
+        "sha256": "f485f989c1ea07bddf3b62ea8d5b2ba6915dbcaac3fb0f80549932a7ca04f8c6"
+      },
+      "danceShow": {
+        "source": "source/girl-pink-dance-show-v39.png",
+        "columns": 4,
+        "rows": 4,
+        "duration": 30000,
+        "label": "สายมือจอมปั่น",
+        "moves": [
+          {
+            "id": "girl-pink:vogue-frame",
+            "label": "ตีกรอบหน้า",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "cycleMs": 640
+          },
+          {
+            "id": "girl-pink:hand-roller",
+            "label": "หมุนแขนลูกกลิ้ง",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "cycleMs": 500
+          },
+          {
+            "id": "girl-pink:dj-scratch",
+            "label": "ดีเจเกาทิพย์",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "cycleMs": 640
+          },
+          {
+            "id": "girl-pink:palm-pull",
+            "label": "มือผลัก–ดึงสลับ",
+            "frames": [
+              12,
+              13,
+              14,
+              15
+            ],
+            "cycleMs": 500
+          }
+        ],
+        "phrases": [
+          {
+            "move": 0,
+            "ms": 5000
+          },
+          {
+            "move": 1,
+            "ms": 5000
+          },
+          {
+            "move": 2,
+            "ms": 5000
+          },
+          {
+            "move": 3,
+            "ms": 5000
+          },
+          {
+            "move": 0,
+            "ms": 2500
+          },
+          {
+            "move": 2,
+            "ms": 2500
+          },
+          {
+            "move": 1,
+            "ms": 2500
+          },
+          {
+            "move": 3,
+            "ms": 2500
+          }
+        ]
+      }
+    },
+    {
+      "id": "boy-plaid",
+      "name": "หนุ่มเสื้อลาย",
+      "source": "source/boy-plaid.png",
+      "width": 1774,
+      "height": 887,
+      "sha256": "01db51f055699358bfe7562da9b153436ebad96091bae8f340542dfc974f679c",
+      "actions": {
+        "idle": {
+          "frames": [
+            0
+          ],
+          "step": 460
+        },
+        "dance": {
+          "frames": [
+            2,
+            5,
+            7,
+            0,
+            7,
+            5,
+            2,
+            0
+          ],
+          "step": 430
+        },
+        "greet": {
+          "frames": [
+            3,
+            0
+          ],
+          "step": 700
+        },
+        "heart": {
+          "frames": [
+            1
+          ],
+          "step": 950
+        },
+        "wai": {
+          "frames": [
+            4
+          ],
+          "step": 1000
+        },
+        "cheer": {
+          "frames": [
+            5
+          ],
+          "step": 600
+        },
+        "kiss": {
+          "frames": [
+            6
+          ],
+          "step": 1000
+        },
+        "point": {
+          "frames": [
+            2
+          ],
+          "step": 800
+        }
+      },
+      "walk": {
+        "source": "source/walk-cycle-v2.png",
+        "columns": 4,
+        "rows": 4,
+        "row": 0,
+        "step": 160
+      },
+      "activities": {
+        "source": "source/boy-plaid-activities-v3.png",
+        "columns": 4,
+        "rows": 3,
+        "standingFrame": 0,
+        "sparklerSide": 1,
+        "releaseSide": 1,
+        "sparklerTips": {
+          "6": [
+            0.3,
+            -0.74
+          ],
+          "7": [
+            0.2,
+            -0.86
+          ]
+        }
+      },
+      "walkViews": {
+        "source": "source/boy-plaid-walk-front-back-v4.png",
+        "columns": 4,
+        "rows": 2,
+        "step": 180,
+        "chromaKey": false,
+        "sha256": "417162d60fec855ebdb7969b8195576a2b70af87636643d12809d12a5c3d1d30"
+      },
+      "signature": {
+        "source": "source/boy-plaid-signature-v5.png",
+        "label": "คุกเข่าหันเข้าพระ · รำวงกางแขน/ปัดแขน/วงแขน/สลับข้าง 4 ท่า",
+        "prayer": {
+          "frames": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "durations": [
+            1000,
+            700,
+            1000,
+            800
+          ]
+        },
+        "dance": {
+          "frames": [
+            4,
+            5,
+            6,
+            7
+          ],
+          "durations": [
+            500,
+            350,
+            500,
+            350
+          ]
+        },
+        "sha256": "f6af5b5891df713a67417db6ee0e8077f10238c70197ca5e6e4084d09a333377",
+        "prayerFacing": "back-left"
+      },
+      "extraDance": {
+        "name": "ป๊อปสนุกมั่นใจ",
+        "frames": [
+          0,
+          3,
+          5,
+          7
+        ],
+        "durations": [
+          500,
+          450,
+          550,
+          450
+        ],
+        "poseNames": [
+          "กางแขนรับจังหวะ",
+          "แตะขมับโยกตัว",
+          "ชูหมัดคู่ยกเข่า",
+          "ชูนิ้วโป้งก้าวสลับ"
+        ],
+        "exclude": [
+          4
+        ],
+        "source": "source/boy-plaid.png",
+        "sha256": "01db51f055699358bfe7562da9b153436ebad96091bae8f340542dfc974f679c"
+      },
+      "danceShow": {
+        "source": "source/boy-plaid-dance-show-v39.png",
+        "columns": 4,
+        "rows": 4,
+        "duration": 30000,
+        "label": "หุ่นยนต์รวน",
+        "moves": [
+          {
+            "id": "boy-plaid:robot-lock",
+            "label": "ล็อกศอกหุ่นยนต์",
+            "frames": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "cycleMs": 800
+          },
+          {
+            "id": "boy-plaid:piston-arms",
+            "label": "แขนลูกสูบ",
+            "frames": [
+              4,
+              5,
+              6,
+              7
+            ],
+            "cycleMs": 640
+          },
+          {
+            "id": "boy-plaid:neck-glitch",
+            "label": "คอกระตุกเครื่องค้าง",
+            "frames": [
+              8,
+              9,
+              10,
+              11
+            ],
+            "cycleMs": 800
+          },
+          {
+            "id": "boy-plaid:zigzag-tutting",
+            "label": "แขนซิกแซกเหลี่ยม",
+            "frames": [
+              12,
+              13,
+              14,
+              15
+            ],
+            "cycleMs": 640
+          }
+        ],
+        "phrases": [
+          {
+            "move": 0,
+            "ms": 5000
+          },
+          {
+            "move": 1,
+            "ms": 5000
+          },
+          {
+            "move": 2,
+            "ms": 5000
+          },
+          {
+            "move": 3,
+            "ms": 5000
+          },
+          {
+            "move": 0,
+            "ms": 2500
+          },
+          {
+            "move": 2,
+            "ms": 2500
+          },
+          {
+            "move": 1,
+            "ms": 2500
+          },
+          {
+            "move": 3,
+            "ms": 2500
+          }
+        ]
+      }
+    }
+  ]
+}

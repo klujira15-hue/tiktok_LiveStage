@@ -1611,6 +1611,48 @@
     },
   };
 
+  // ศาลท้าวเวสสุวรรณใช้ภาพ 2.5D ที่วาดทับชั้น static ทุกเฟรม
+  // วาดขั้นปลดล็อกใน a2/a3 หลังภาพพื้นหลัง เพื่อให้เห็นจริงบน OBS ด้วย
+  L.wessuwan = {
+    names: { 2: 'วงแสงทอง + กลีบดอกไม้', 3: 'โคมทอง + ฝนกลีบดอกไม้' },
+    a2(c, t) {
+      c.save();
+      const wash = c.createLinearGradient(0, 0, 0, 1920);
+      wash.addColorStop(0, 'rgba(255,205,80,.20)');
+      wash.addColorStop(.6, 'rgba(255,216,120,.03)');
+      wash.addColorStop(1, 'rgba(232,172,44,.13)');
+      c.fillStyle = wash;
+      c.fillRect(0, 0, 1080, 1920);
+      // วงแสงบนพื้นอยู่หลังตัวละคร ไม่ทับป้ายข้อมูล
+      for (let i = 0; i < 3; i++) {
+        c.strokeStyle = 'rgba(255,225,135,' + (.32 - i * .06) + ')';
+        c.lineWidth = 5 - i;
+        c.beginPath();
+        c.ellipse(540, 1390, 290 + i * 58, 82 + i * 18, 0, 0, TAU);
+        c.stroke();
+      }
+      for (let i = 0; i < 14; i++) {
+        const angle = i * TAU / 14 + t / 13000;
+        const x = 540 + Math.cos(angle) * 350;
+        const y = 1390 + Math.sin(angle) * 102;
+        glow(c, x, y, 27, '#ffdc83', .58);
+        c.fillStyle = '#fff3ca';
+        c.beginPath(); c.arc(x, y, 3.5, 0, TAU); c.fill();
+      }
+      c.restore();
+    },
+    f2(c, t) {
+      fall(c, t, { n: 26, cols: ['#ffe6a0', '#fff1c7', '#f4b8ba'], kind: 'petal', speed: 48, seed: 521, size: 1.15 });
+    },
+    a3(c, t) {
+      lanternRow(c, 50, 1030, 110, 65, 9, '#d7a540');
+      pulseGlow(c, t, 540, 230, 370, '#ffda7b', .24, 1800);
+    },
+    f3(c, t) {
+      fall(c, t, { n: 36, cols: ['#ffe2a1', '#fff6dc', '#edb6bf'], kind: 'petal', speed: 62, seed: 522, size: 1.35 });
+    },
+  };
+
   // ธีมที่สร้างเองใช้ชุดของธีมต้นแบบ
   const pick = (id) => L[id] || null;
 

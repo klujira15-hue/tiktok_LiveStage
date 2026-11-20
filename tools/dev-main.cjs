@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const projectRoot = path.resolve(__dirname, '..');
+require(path.join(projectRoot,'src','desktop','stdio-guard.js'))({logFile:path.join(projectRoot,'.local','logs','stdio-errors.log')});
 process.env.LIVESTAGE_USERDATA ||= path.join(projectRoot, '.local', 'user-data');
 fs.mkdirSync(process.env.LIVESTAGE_USERDATA, { recursive: true });
 // Block legacy provider requests in Node and all Electron renderer sessions.

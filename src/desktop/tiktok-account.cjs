@@ -45,9 +45,9 @@ function install({getWindow,getOrigin}){
     login.loadURL('https://www.tiktok.com/login').then(()=>console.log('[TikTok account] Embedded login page loaded')).catch(()=>console.log('[TikTok account] Login page load failed'));
     return {opened:true,saved:initiallySaved};
   }
-  async function readLiveRoom(username){
+  async function readLiveRoom(username,{timeoutMs=15000}={}){
     if(!(await status()).saved||!/^[A-Za-z0-9_.]{1,64}$/.test(username))return null;
-    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+    const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),Math.max(1000,Math.min(15000,timeoutMs)));
     try{
       // Only official TikTok sees the partition's session. Never pass cookies to connector/signers.
       const response=await store.fetch('https://www.tiktok.com/@'+encodeURIComponent(username)+'/live',{signal:controller.signal});

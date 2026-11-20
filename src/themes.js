@@ -372,4 +372,5 @@ Object.assign(THEMES, withAdded(asGames(require('./brawltheme').BRAWL_THEMES), '
 Object.assign(THEMES, withAdded(asGames(require('./pettheme').PET_THEMES), '1.8.0')); // เลี้ยงน้องกวางวิเศษ (3D)
 Object.assign(THEMES, withAdded(require('./molamtheme').MOLAM_STAGE_THEMES, '1.8.0')); // เวทีหมอลำ 3D (ภาพคนจริง + คำสั่งกุหลาบ/ตี/เปลี่ยนตัว)
 
+Object.assign(THEMES, require('./fairtheme'));
 module.exports = { THEMES };

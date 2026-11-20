@@ -1,0 +1,6 @@
+'use strict';
+const fairGifts=require('./fair-gifts');
+const activities=[['lotus','🪷','ดอกบัว'],['sparklers','🎇','ไฟเย็น'],['water','🪷','กระทง'],['lantern','🏮','ปล่อยโคม'],['wheel','🎡','ชิงช้า'],['dance','💃','รำวง'],['sangha','🧺','สังฆทาน'],['petals','🌸','โปรยดอกไม้'],['sky','✨','แจกโคม']];
+const effects=Object.fromEntries(activities.map(([activity,icon,label],i)=>['g'+(i+1),{activity,icon,label,kind:i===8?'big':'burst',emoji:icon}]));
+module.exports={templefair:{id:'templefair',name:'งานวัดลอยกระทง',icon:'🏮',desc:'งานวัดยามค่ำ ตัวละครเดินจริง ไหว้พระ ถวายบัว สังฆทาน ไฟเย็น กระทง ชิงช้า และรำวง คนละรอบ',layout:'fair',alias:'krathong',added:'1.9.0',fields:['host'],requestAction:'list',bigEffect:'g9',effects,texts:{gifts:'🎁 ลูกเล่นงานวัด',top:'👑 เจ้าภาพงานวัด',queue:'🙏 คำอวยพร',queueEmpty:'พิมพ์ ขอให้รวย หรือ สาธุ',queueBy:'โดย',hype:'❤ พลังงานวัด',hypeFull:'งานวัดคึกคัก!',bigWord:'โคมเต็มฟ้า',bigSubUser:'ขอบคุณเจ้าภาพงานวัด',bigSubAll:'ขอบคุณทุกคน',joinVerb:'เข้ามาเที่ยวงานวัด',emptyTop:'รอเจ้าภาพคนแรก'},hint:'สาธุ · เซียมซี · เลือกตัวละคร 1–4',defaults:{title:'งานวัดลอยกระทง',subtitle:'เที่ยวงานฟรี · ส่งของขวัญร่วมกิจกรรมคนละรอบ',host:'ผู้จัดงาน',requestCommand:'อวยพร',gifts:structuredClone(fairGifts.gifts),fair:{showSigns:true,ambient:true,sound:true}},giftPreviewTheme:'templefair',fair:true}};
+
